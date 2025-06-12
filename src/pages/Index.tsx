@@ -1,109 +1,216 @@
 
-import { useState } from 'react';
-import { Camera, Scan, BarChart, User, Home, Calendar, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Camera, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import CalorieProgress from '@/components/CalorieProgress';
 import MealCard from '@/components/MealCard';
 import ScanMeal from '@/components/ScanMeal';
 import MacroStats from '@/components/MacroStats';
 import QuickActions from '@/components/QuickActions';
 import BottomNav from '@/components/BottomNav';
+import ApiKeySetup from '@/components/ApiKeySetup';
+import Diary from './Diary';
+import Plans from './Plans';
+import Stats from './Stats';
+import Profile from './Profile';
+import { openaiService } from '@/lib/openai';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showScanner, setShowScanner] = useState(false);
-
-  const todayMeals = [
+  const [showApiKeySetup, setShowApiKeySetup] = useState(false);
+  const [meals, setMeals] = useState([
     {
       id: '1',
-      name: 'Breakfast',
+      name: 'Café da Manhã - Aveia com Frutas',
       time: '08:30',
       calories: 320,
       image: '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png'
     },
     {
       id: '2',
-      name: 'Lunch',
+      name: 'Almoço - Salmão Grelhado',
       time: '12:45',
       calories: 680,
       image: '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png'
     }
-  ];
+  ]);
 
-  if (showScanner) {
-    return <ScanMeal onClose={() => setShowScanner(false)} />;
+  useEffect(() => {
+    // Check if API key is configured
+    if (!openaiService.hasApiKey()) {
+      setShowApiKeySetup(true);
+    }
+  }, []);
+
+  const handleMealAdded = (newMeal: any) => {
+    setMeals(prev => [...prev, newMeal]);
+  };
+
+  const handleScanMeal = () => {
+    if (!openaiService.hasApiKey()) {
+      setShowApiKeySetup(true);
+      return;
+    }
+    setShowScanner(true);
+  };
+
+  if (showApiKeySetup) {
+    return <ApiKeySetup onKeySet={() => setShowApiKeySetup(false)} />;
   }
 
+  if (showScanner) {
+    return (
+      <ScanMeal 
+        onClose={() => setShowScanner(false)} 
+        onMealAdded={handleMealAdded}
+      />
+    );
+  }
+
+  // Render different pages based on active tab
+  if (activeTab === 'diary') {
+    return (
+      <div>
+        <Diary />
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
+    );
+  }
+
+  if (activeTab === 'stats') {
+    return (
+      <div>
+        <Stats />
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
+    );
+  }
+
+  if (activeTab === 'profile') {
+    return (
+      <div>
+        <Profile />
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
+    );
+  }
+
+  // Dashboard/Home view
+  const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 pt-12">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <User size={16} />
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="relative flex items-center justify-between p-6 pt-12">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-nutriai rounded-full flex items-center justify-center shadow-lg">
+              <Camera size={20} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-heading">NutriAI Vision</h1>
+              <p className="text-caption">Bem-vinda de volta!</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-semibold text-lg">My NutriAI</h1>
-          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-primary hover:bg-primary/10"
+            onClick={() => setActiveTab('profile')}
+          >
+            Perfil
+          </Button>
         </div>
-        <Button variant="ghost" size="sm" className="text-blue-400">
-          Edit
-        </Button>
       </div>
 
       {/* Today Section */}
       <div className="px-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Today</h2>
-          <span className="text-sm text-slate-400">Goal • Food • Exercise</span>
+          <h2 className="text-subheading">Hoje</h2>
+          <span className="text-caption">
+            {new Date().toLocaleDateString('pt-BR', { 
+              weekday: 'long',
+              day: 'numeric',
+              month: 'short'
+            })}
+          </span>
         </div>
 
         {/* Calorie Progress */}
-        <CalorieProgress 
-          current={1450} 
-          goal={2200} 
-          remaining={750}
-        />
+        <div className="animate-fade-in">
+          <CalorieProgress 
+            current={totalCalories} 
+            goal={2200} 
+            remaining={2200 - totalCalories}
+          />
+        </div>
       </div>
 
       {/* Macro Stats */}
-      <div className="px-6 mb-6">
+      <div className="px-6 mb-6 animate-slide-up">
         <MacroStats 
           water={1.2}
           exercise={45}
-          food={3}
+          food={meals.length}
         />
       </div>
 
       {/* Quick Actions */}
-      <div className="px-6 mb-6">
-        <QuickActions onScanMeal={() => setShowScanner(true)} />
+      <div className="px-6 mb-6 animate-slide-up">
+        <QuickActions onScanMeal={handleScanMeal} />
       </div>
 
       {/* Today's Meals */}
-      <div className="px-6 mb-20">
+      <div className="px-6 mb-20 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Today's Meals</h3>
-          <Button variant="ghost" size="sm" className="text-blue-400">
-            View All
+          <h3 className="text-subheading">Refeições de Hoje</h3>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-primary hover:bg-primary/10"
+            onClick={() => setActiveTab('diary')}
+          >
+            Ver Todas
           </Button>
         </div>
         
         <div className="space-y-3">
-          {todayMeals.map((meal) => (
-            <MealCard key={meal.id} meal={meal} />
+          {meals.map((meal) => (
+            <div key={meal.id} className="animate-scale-in">
+              <MealCard meal={meal} />
+            </div>
           ))}
         </div>
 
         {/* Add Meal Button */}
         <Button 
-          onClick={() => setShowScanner(true)}
-          className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl"
+          onClick={handleScanMeal}
+          className="w-full mt-6 bg-gradient-nutriai hover:opacity-90 text-white py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+          size="lg"
         >
           <Plus size={20} className="mr-2" />
-          Log New Meal
+          Escanear Nova Refeição
         </Button>
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <Button 
+            variant="outline" 
+            className="border-border hover:bg-muted/50"
+            onClick={() => setActiveTab('stats')}
+          >
+            Ver Estatísticas
+          </Button>
+          <Button 
+            variant="outline" 
+            className="border-border hover:bg-muted/50"
+            onClick={() => setActiveTab('diary')}
+          >
+            Planos Alimentares
+          </Button>
+        </div>
       </div>
 
       {/* Bottom Navigation */}
