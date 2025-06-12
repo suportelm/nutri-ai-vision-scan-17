@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +10,7 @@ import {
   Target,
   Activity,
   Zap,
-  Fire
+  Flame
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -62,7 +61,7 @@ const Stats = () => {
       id: 1, 
       title: '7 Dias Consecutivos', 
       description: 'Registrou refeições por uma semana',
-      icon: Fire,
+      icon: Flame,
       earned: true,
       date: '15/01/2024'
     },
@@ -157,7 +156,7 @@ const Stats = () => {
                 <p className="text-sm text-muted-foreground">dias</p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                <Fire className="w-6 h-6 text-primary" />
+                <Flame className="w-6 h-6 text-primary" />
               </div>
             </div>
           </Card>
