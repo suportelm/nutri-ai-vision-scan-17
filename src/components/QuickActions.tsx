@@ -1,6 +1,6 @@
 
 import { Card } from '@/components/ui/card';
-import { Camera, Scan } from 'lucide-react';
+import { Camera } from 'lucide-react';
 
 interface QuickActionsProps {
   onScanMeal: () => void;
@@ -8,27 +8,17 @@ interface QuickActionsProps {
 
 const QuickActions = ({ onScanMeal }: QuickActionsProps) => {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <Card 
-        className="bg-slate-800 border-slate-700 p-6 cursor-pointer hover:bg-slate-750 transition-colors"
+        className="bg-gradient-card border-border/50 p-6 cursor-pointer hover:bg-muted/20 transition-all duration-300 hover:scale-105 hover:shadow-xl group"
         onClick={onScanMeal}
       >
         <div className="text-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Camera size={24} className="text-white" />
+          <div className="w-16 h-16 bg-gradient-nutriai rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+            <Camera size={28} className="text-white" />
           </div>
-          <h3 className="font-semibold mb-1">Scan a Meal</h3>
-          <p className="text-xs text-slate-400">Instant Nutrition Insights Made Simple</p>
-        </div>
-      </Card>
-      
-      <Card className="bg-slate-800 border-slate-700 p-6 cursor-pointer hover:bg-slate-750 transition-colors">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-slate-600 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Scan size={24} className="text-white" />
-          </div>
-          <h3 className="font-semibold mb-1">Scan a Barcode</h3>
-          <p className="text-xs text-slate-400">Decode Access Information Instantly</p>
+          <h3 className="text-subheading mb-2 group-hover:text-primary transition-colors">Escanear Refeição</h3>
+          <p className="text-caption">Analise instantaneamente o valor nutricional com IA</p>
         </div>
       </Card>
     </div>

@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -55,6 +54,8 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
       // Convert base64 to just the data part
       const base64Data = selectedImage.split(',')[1];
       
+      console.log('Iniciando análise da imagem...');
+      
       const result = await openaiService.analyzeImage(base64Data);
       setAnalysisResult(result);
 
@@ -67,7 +68,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
       setError(error.message || 'Erro ao analisar a imagem');
       toast({
         title: 'Erro na análise',
-        description: 'Não foi possível analisar a imagem. Tente novamente.',
+        description: 'Não foi possível analisar a imagem. Verifique sua chave da API e tente novamente.',
         variant: 'destructive'
       });
     } finally {
@@ -100,7 +101,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <div className="flex items-center justify-between p-6 pt-12 border-b border-border/50">
-        <Button variant="ghost" size="sm" onClick={onClose}>
+        <Button variant="ghost" size="sm" onClick={onClose} className="hover:scale-105 transition-transform">
           <X size={20} />
         </Button>
         <h1 className="text-heading">Escanear Refeição</h1>
@@ -111,8 +112,8 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
         {!selectedImage ? (
           /* Image Selection */
           <div className="space-y-6 mt-6">
-            <Card className="bg-gradient-card border-border/50 border-2 border-dashed p-8 text-center">
-              <Camera size={48} className="mx-auto mb-4 text-primary" />
+            <Card className="bg-gradient-card border-border/50 border-2 border-dashed p-8 text-center card-interactive">
+              <Camera size={48} className="mx-auto mb-4 text-primary animate-pulse-slow" />
               <h3 className="text-subheading mb-2">Fotografe sua Refeição</h3>
               <p className="text-body text-muted-foreground mb-6">
                 Nossa IA analisará o conteúdo nutricional instantaneamente
@@ -121,7 +122,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
               <div className="space-y-3">
                 <Button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full bg-gradient-nutriai hover:opacity-90"
+                  className="w-full btn-primary"
                   size="lg"
                 >
                   <Camera size={20} className="mr-2" />
@@ -131,7 +132,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
                 <Button 
                   variant="outline" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-border hover:bg-muted"
+                  className="w-full btn-secondary"
                   size="lg"
                 >
                   <Upload size={20} className="mr-2" />
@@ -150,7 +151,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
             </Card>
 
             {!openaiService.hasApiKey() && (
-              <Card className="bg-muted/20 border-destructive/20 p-4">
+              <Card className="bg-muted/20 border-destructive/20 p-4 animate-fade-in">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
                   <div>
@@ -166,16 +167,16 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
         ) : (
           /* Image Analysis */
           <div className="space-y-6 mt-6">
-            <Card className="bg-gradient-card border-border/50 p-4 overflow-hidden">
+            <Card className="bg-gradient-card border-border/50 p-4 overflow-hidden animate-scale-in">
               <img 
                 src={selectedImage} 
                 alt="Refeição selecionada"
-                className="w-full h-64 object-cover rounded-lg"
+                className="w-full h-64 object-cover rounded-lg shadow-lg"
               />
             </Card>
 
             {error && (
-              <Card className="bg-destructive/10 border-destructive/20 p-4">
+              <Card className="bg-destructive/10 border-destructive/20 p-4 animate-fade-in">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
                   <div>
@@ -187,8 +188,8 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
             )}
 
             {isAnalyzing ? (
-              <Card className="bg-gradient-card border-border/50 p-8 text-center">
-                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <Card className="bg-gradient-card border-border/50 p-8 text-center animate-pulse">
+                <div className="loading-spinner mx-auto mb-4"></div>
                 <h3 className="text-subheading mb-2">Analisando com IA</h3>
                 <p className="text-body text-muted-foreground">
                   Nossa IA está identificando os alimentos e calculando os nutrientes...
@@ -277,12 +278,12 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
                       setAnalysisResult(null);
                       setError(null);
                     }}
-                    className="border-border hover:bg-muted"
+                    className="btn-secondary"
                   >
                     Nova Foto
                   </Button>
                   <Button 
-                    className="bg-gradient-nutriai hover:opacity-90"
+                    className="btn-primary"
                     onClick={handleAddMeal}
                   >
                     Adicionar ao Diário
@@ -292,7 +293,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
             ) : (
               <Button 
                 onClick={analyzeImage}
-                className="w-full bg-gradient-nutriai hover:opacity-90"
+                className="w-full btn-primary"
                 size="lg"
                 disabled={!openaiService.hasApiKey()}
               >

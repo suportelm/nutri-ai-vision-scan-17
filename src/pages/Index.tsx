@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Camera, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,8 +104,8 @@ const Index = () => {
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
         <div className="relative flex items-center justify-between p-6 pt-12">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-nutriai rounded-full flex items-center justify-center shadow-lg">
+          <div className="flex items-center gap-3 animate-fade-in">
+            <div className="w-12 h-12 bg-gradient-nutriai rounded-full flex items-center justify-center shadow-xl">
               <Camera size={20} className="text-white" />
             </div>
             <div>
@@ -117,7 +116,7 @@ const Index = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-primary hover:bg-primary/10"
+            className="text-primary hover:bg-primary/10 hover:scale-105 transition-all duration-200"
             onClick={() => setActiveTab('profile')}
           >
             Perfil
@@ -127,7 +126,7 @@ const Index = () => {
 
       {/* Today Section */}
       <div className="px-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 animate-slide-up">
           <h2 className="text-subheading">Hoje</h2>
           <span className="text-caption">
             {new Date().toLocaleDateString('pt-BR', { 
@@ -169,7 +168,7 @@ const Index = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-primary hover:bg-primary/10"
+            className="text-primary hover:bg-primary/10 hover:scale-105 transition-all duration-200"
             onClick={() => setActiveTab('diary')}
           >
             Ver Todas
@@ -177,8 +176,8 @@ const Index = () => {
         </div>
         
         <div className="space-y-3">
-          {meals.map((meal) => (
-            <div key={meal.id} className="animate-scale-in">
+          {meals.map((meal, index) => (
+            <div key={meal.id} className="animate-scale-in card-interactive" style={{animationDelay: `${index * 0.1}s`}}>
               <MealCard meal={meal} />
             </div>
           ))}
@@ -187,26 +186,26 @@ const Index = () => {
         {/* Add Meal Button */}
         <Button 
           onClick={handleScanMeal}
-          className="w-full mt-6 bg-gradient-nutriai hover:opacity-90 text-white py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+          className="w-full mt-6 btn-primary text-white py-4 text-lg"
           size="lg"
         >
-          <Plus size={20} className="mr-2" />
+          <Plus size={24} className="mr-3" />
           Escanear Nova Refeição
         </Button>
 
         {/* Quick Links */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
+        <div className="grid grid-cols-2 gap-3 mt-6">
           <Button 
             variant="outline" 
-            className="border-border hover:bg-muted/50"
+            className="btn-secondary"
             onClick={() => setActiveTab('stats')}
           >
             Ver Estatísticas
           </Button>
           <Button 
             variant="outline" 
-            className="border-border hover:bg-muted/50"
-            onClick={() => setActiveTab('diary')}
+            className="btn-secondary"
+            onClick={() => setActiveTab('plans')}
           >
             Planos Alimentares
           </Button>

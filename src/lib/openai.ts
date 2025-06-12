@@ -42,6 +42,8 @@ export class OpenAIService {
     }
 
     try {
+      console.log('Sending request to OpenAI API...');
+      
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -49,16 +51,16 @@ export class OpenAIService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4-vision-preview',
+          model: 'gpt-4o', // Updated to use the correct model
           messages: [
             {
               role: 'system',
-              content: `You are a nutrition expert AI. Analyze food images and provide detailed nutritional information. 
-              Return a JSON response with the following structure:
+              content: `Você é um especialista em nutrição. Analise imagens de alimentos e forneça informações nutricionais detalhadas em português. 
+              Retorne uma resposta JSON com a seguinte estrutura:
               {
-                "foods": [{"name": "food name", "portion": "estimated portion", "confidence": 0.85}],
+                "foods": [{"name": "nome do alimento", "portion": "porção estimada", "confidence": 0.85}],
                 "nutrition": {"calories": 450, "protein": 25, "carbs": 45, "fat": 15, "fiber": 8, "sugar": 12},
-                "recommendations": ["suggestion 1", "suggestion 2"]
+                "recommendations": ["sugestão 1", "sugestão 2"]
               }`
             },
             {
@@ -66,7 +68,7 @@ export class OpenAIService {
               content: [
                 {
                   type: 'text',
-                  text: 'Analyze this meal image and provide detailed nutritional information in JSON format.'
+                  text: 'Analise esta imagem de refeição e forneça informações nutricionais detalhadas em formato JSON.'
                 },
                 {
                   type: 'image_url',
@@ -82,11 +84,17 @@ export class OpenAIService {
         })
       });
 
+      console.log('OpenAI API Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
+        const errorData = await response.json();
+        console.error('OpenAI API Error:', errorData);
+        throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
+      console.log('OpenAI API Response:', data);
+      
       const content = data.choices[0]?.message?.content;
       
       if (!content) {
@@ -96,10 +104,14 @@ export class OpenAIService {
       // Parse JSON response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
+        console.log('Raw content:', content);
         throw new Error('Invalid JSON response from OpenAI');
       }
 
-      return JSON.parse(jsonMatch[0]);
+      const result = JSON.parse(jsonMatch[0]);
+      console.log('Parsed result:', result);
+      
+      return result;
     } catch (error) {
       console.error('OpenAI API Error:', error);
       throw error;
@@ -126,23 +138,23 @@ export class OpenAIService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'gpt-4o',
           messages: [
             {
               role: 'system',
-              content: 'You are a certified nutritionist. Create personalized meal plans based on user profiles.'
+              content: 'Você é um nutricionista certificado. Crie planos alimentares personalizados baseados no perfil do usuário.'
             },
             {
               role: 'user',
-              content: `Create a 7-day meal plan for:
-              Age: ${userProfile.age}
-              Weight: ${userProfile.weight}kg
-              Height: ${userProfile.height}cm
-              Activity: ${userProfile.activityLevel}
-              Goal: ${userProfile.goal}
-              Restrictions: ${userProfile.restrictions.join(', ')}
+              content: `Crie um plano alimentar de 7 dias para:
+              Idade: ${userProfile.age} anos
+              Peso: ${userProfile.weight}kg
+              Altura: ${userProfile.height}cm
+              Atividade: ${userProfile.activityLevel}
+              Objetivo: ${userProfile.goal}
+              Restrições: ${userProfile.restrictions.join(', ')}
               
-              Return JSON with daily meals, calories, and macros.`
+              Retorne JSON com refeições diárias, calorias e macros.`
             }
           ],
           max_tokens: 2000,
@@ -151,7 +163,14 @@ export class OpenAIService {
       });
 
       const data = await response.json();
-      return JSON.parse(data.choices[0]?.message?.content || '{}');
+      const content = data.choices[0]?.message?.content;
+      
+      // Try to parse JSON, if fails return raw content
+      try {
+        return JSON.parse(content);
+      } catch {
+        return { plan: content };
+      }
     } catch (error) {
       console.error('Meal plan generation error:', error);
       throw error;

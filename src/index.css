@@ -19,13 +19,13 @@
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 10%;
+    --secondary: 142 71% 45%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 0 0% 10%;
+    --accent: 45 93% 47%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 63% 31%;
@@ -55,11 +55,11 @@
     --popover-foreground: 0 0% 98%;
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 10%;
+    --secondary: 142 71% 45%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 65%;
-    --accent: 0 0% 10%;
+    --accent: 45 93% 47%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
@@ -102,39 +102,63 @@
 
   /* Animation utilities */
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.4s ease-out;
   }
   
   .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
+    animation: slideUp 0.4s ease-out;
   }
   
   .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   /* Gradient backgrounds */
   .bg-gradient-nutriai {
     background: linear-gradient(135deg, hsl(var(--nutriai-primary)) 0%, hsl(var(--nutriai-secondary)) 100%);
+    box-shadow: 0 4px 20px hsla(var(--nutriai-primary), 0.3);
   }
   
   .bg-gradient-card {
     background: linear-gradient(135deg, hsl(var(--nutriai-surface)) 0%, hsl(0 0% 8%) 100%);
+    box-shadow: 0 4px 12px hsla(0, 0%, 0%, 0.3);
+  }
+
+  /* Enhanced button styles */
+  .btn-primary {
+    @apply bg-gradient-nutriai text-white font-medium px-6 py-3 rounded-xl;
+    @apply shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply hover:scale-105 active:scale-95;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50;
+  }
+
+  .btn-secondary {
+    @apply bg-muted/20 border border-border text-foreground font-medium px-6 py-3 rounded-xl;
+    @apply shadow-md hover:shadow-lg transition-all duration-300;
+    @apply hover:scale-105 hover:bg-muted/30 active:scale-95;
+    @apply focus:outline-none focus:ring-2 focus:ring-muted/50;
+  }
+
+  /* Card enhancements */
+  .card-interactive {
+    @apply transition-all duration-300 cursor-pointer;
+    @apply hover:scale-105 hover:shadow-xl;
+    @apply active:scale-95;
+  }
+
+  /* Glass effect */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -145,10 +169,21 @@
   }
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
@@ -156,16 +191,57 @@
   }
 }
 
+/* Enhanced pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 /* Scrollbar customization */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: hsl(var(--nutriai-surface));
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--nutriai-primary));
-  border-radius: 2px;
+  background: linear-gradient(180deg, hsl(var(--nutriai-primary)), hsl(var(--nutriai-secondary)));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, hsl(var(--nutriai-secondary)), hsl(var(--nutriai-primary)));
+}
+
+/* Loading animations */
+.loading-spinner {
+  @apply w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin;
+}
+
+/* Floating action button */
+.fab {
+  @apply fixed bottom-20 right-6 w-14 h-14 bg-gradient-nutriai rounded-full;
+  @apply flex items-center justify-center shadow-xl;
+  @apply hover:scale-110 active:scale-95 transition-transform duration-200;
+  box-shadow: 0 8px 25px hsla(var(--nutriai-primary), 0.4);
+}
+
+/* Notification styles */
+.notification-success {
+  @apply bg-secondary/20 border-secondary/30 text-secondary;
+}
+
+.notification-error {
+  @apply bg-destructive/20 border-destructive/30 text-destructive;
+}
+
+.notification-info {
+  @apply bg-primary/20 border-primary/30 text-primary;
 }
