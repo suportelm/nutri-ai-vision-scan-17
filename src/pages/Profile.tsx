@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -7,24 +6,23 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { 
   User, 
-  Settings, 
   Target, 
   Bell, 
   Shield, 
   Download,
   LogOut,
   Edit,
-  Key,
   ChevronRight,
   Camera
 } from 'lucide-react';
-import { openaiService } from '@/lib/openai';
+import GoalsSettings from '@/components/GoalsSettings';
 
 const Profile = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showGoalsSettings, setShowGoalsSettings] = useState(false);
   const [userProfile, setUserProfile] = useState({
-    name: 'Maria Silva',
-    email: 'maria.silva@email.com',
+    name: localStorage.getItem('user_name') || 'Maria Silva',
+    email: localStorage.getItem('user_email') || 'maria.silva@email.com',
     age: 28,
     weight: 65,
     height: 165,
@@ -35,7 +33,15 @@ const Profile = () => {
 
   const handleSaveProfile = () => {
     setIsEditingProfile(false);
-    // Here you would save to database
+    localStorage.setItem('user_name', userProfile.name);
+    localStorage.setItem('user_email', userProfile.email);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user_authenticated');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_name');
+    window.location.reload();
   };
 
   const menuItems = [
@@ -43,18 +49,12 @@ const Profile = () => {
       icon: Target,
       title: 'Metas e Objetivos',
       description: 'Configure suas metas pessoais',
-      action: () => {}
+      action: () => setShowGoalsSettings(true)
     },
     {
       icon: Bell,
       title: 'Notificações',
       description: 'Gerencie lembretes e alertas',
-      action: () => {}
-    },
-    {
-      icon: Key,
-      title: 'Configurar OpenAI',
-      description: 'Chave da API para análise de IA',
       action: () => {}
     },
     {
@@ -76,6 +76,10 @@ const Profile = () => {
     { name: 'Meta de Proteína', color: 'bg-secondary' },
     { name: 'Primeiro Scan', color: 'bg-accent' }
   ];
+
+  if (showGoalsSettings) {
+    return <GoalsSettings onBack={() => setShowGoalsSettings(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
@@ -230,27 +234,6 @@ const Profile = () => {
           </div>
         </Card>
 
-        {/* API Key Status */}
-        <Card className="bg-gradient-card border-border/50 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-subheading">OpenAI Integration</h3>
-              <p className="text-sm text-muted-foreground">
-                {openaiService.hasApiKey() 
-                  ? 'Configurado e funcionando' 
-                  : 'Configure para usar análise de IA'
-                }
-              </p>
-            </div>
-            <Badge 
-              variant={openaiService.hasApiKey() ? 'default' : 'destructive'}
-              className={openaiService.hasApiKey() ? 'bg-secondary' : ''}
-            >
-              {openaiService.hasApiKey() ? 'Ativo' : 'Inativo'}
-            </Badge>
-          </div>
-        </Card>
-
         {/* Menu Items */}
         <Card className="bg-gradient-card border-border/50 p-6">
           <h3 className="text-subheading mb-4">Configurações</h3>
@@ -284,6 +267,7 @@ const Profile = () => {
           <Button 
             variant="outline" 
             className="w-full border-destructive/20 text-destructive hover:bg-destructive/10"
+            onClick={handleLogout}
           >
             <LogOut size={16} className="mr-2" />
             Sair da Conta

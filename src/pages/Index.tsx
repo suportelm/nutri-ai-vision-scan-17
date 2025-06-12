@@ -7,17 +7,16 @@ import ScanMeal from '@/components/ScanMeal';
 import MacroStats from '@/components/MacroStats';
 import QuickActions from '@/components/QuickActions';
 import BottomNav from '@/components/BottomNav';
-import ApiKeySetup from '@/components/ApiKeySetup';
+import Auth from '@/components/Auth';
 import Diary from './Diary';
 import Plans from './Plans';
 import Stats from './Stats';
 import Profile from './Profile';
-import { openaiService } from '@/lib/openai';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showScanner, setShowScanner] = useState(false);
-  const [showApiKeySetup, setShowApiKeySetup] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [meals, setMeals] = useState([
     {
       id: '1',
@@ -36,10 +35,9 @@ const Index = () => {
   ]);
 
   useEffect(() => {
-    // Check if API key is configured
-    if (!openaiService.hasApiKey()) {
-      setShowApiKeySetup(true);
-    }
+    // Check authentication status
+    const authStatus = localStorage.getItem('user_authenticated');
+    setIsAuthenticated(authStatus === 'true');
   }, []);
 
   const handleMealAdded = (newMeal: any) => {
@@ -47,15 +45,12 @@ const Index = () => {
   };
 
   const handleScanMeal = () => {
-    if (!openaiService.hasApiKey()) {
-      setShowApiKeySetup(true);
-      return;
-    }
     setShowScanner(true);
   };
 
-  if (showApiKeySetup) {
-    return <ApiKeySetup onKeySet={() => setShowApiKeySetup(false)} />;
+  // Show authentication screen if not logged in
+  if (!isAuthenticated) {
+    return <Auth onAuthSuccess={() => setIsAuthenticated(true)} />;
   }
 
   if (showScanner) {
@@ -97,6 +92,7 @@ const Index = () => {
 
   // Dashboard/Home view
   const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
+  const userName = localStorage.getItem('user_name') || 'Usuário';
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -110,7 +106,7 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-heading">NutriAI Vision</h1>
-              <p className="text-caption">Bem-vinda de volta!</p>
+              <p className="text-caption">Olá, {userName}!</p>
             </div>
           </div>
           <Button 

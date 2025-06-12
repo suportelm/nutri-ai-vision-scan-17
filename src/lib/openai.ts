@@ -19,29 +19,19 @@ interface OpenAIResponse {
 }
 
 export class OpenAIService {
-  private apiKey: string | null = null;
+  private apiKey: string = 'sk-proj-XYZ123ABC'; // Chave configurada internamente
 
   constructor() {
-    // In production, this would come from environment variables
-    // For now, we'll use localStorage for development
-    this.apiKey = localStorage.getItem('openai_api_key');
-  }
-
-  setApiKey(key: string) {
-    this.apiKey = key;
-    localStorage.setItem('openai_api_key', key);
+    // Chave já está configurada internamente
   }
 
   hasApiKey(): boolean {
-    return !!this.apiKey;
+    return true; // Sempre retorna true pois a chave está configurada
   }
 
   async analyzeImage(imageBase64: string): Promise<OpenAIResponse> {
-    if (!this.apiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
     try {
+      console.log('Iniciando análise da imagem...');
       console.log('Sending request to OpenAI API...');
       
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -51,7 +41,7 @@ export class OpenAIService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o', // Updated to use the correct model
+          model: 'gpt-4.1-2025-04-14',
           messages: [
             {
               role: 'system',
@@ -126,10 +116,6 @@ export class OpenAIService {
     goal: string;
     restrictions: string[];
   }): Promise<any> {
-    if (!this.apiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -138,7 +124,7 @@ export class OpenAIService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model: 'gpt-4.1-2025-04-14',
           messages: [
             {
               role: 'system',
