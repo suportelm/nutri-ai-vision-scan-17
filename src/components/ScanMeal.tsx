@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { X, Camera, Upload, AlertCircle } from 'lucide-react';
+import { X, Camera, Upload, AlertCircle, Wifi, RefreshCw } from 'lucide-react';
 import { openaiService } from '@/lib/openai';
 import { toast } from '@/hooks/use-toast';
 
@@ -41,11 +41,6 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
 
   const analyzeImage = async () => {
     if (!selectedImage) return;
-    
-    if (!openaiService.hasApiKey()) {
-      setError('Chave da API OpenAI não configurada');
-      return;
-    }
 
     setIsAnalyzing(true);
     setError(null);
@@ -64,11 +59,13 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
         description: 'Sua refeição foi analisada com sucesso.',
       });
     } catch (error: any) {
-      console.error('Analysis error:', error);
-      setError(error.message || 'Erro ao analisar a imagem');
+      console.error('Erro na análise:', error);
+      const errorMessage = error.message || 'Erro ao analisar a imagem';
+      setError(errorMessage);
+      
       toast({
         title: 'Erro na análise',
-        description: 'Não foi possível analisar a imagem. Verifique sua chave da API e tente novamente.',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
@@ -95,6 +92,11 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
       onMealAdded(meal);
     }
     onClose();
+  };
+
+  const retryAnalysis = () => {
+    setError(null);
+    analyzeImage();
   };
 
   return (
@@ -150,19 +152,17 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
               />
             </Card>
 
-            {!openaiService.hasApiKey() && (
-              <Card className="bg-muted/20 border-destructive/20 p-4 animate-fade-in">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-destructive">API Key Necessária</h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Configure sua chave da API OpenAI nas configurações para usar a análise de IA.
-                    </p>
-                  </div>
+            <Card className="bg-muted/20 border-primary/20 p-4 animate-fade-in">
+              <div className="flex items-start gap-3">
+                <Wifi className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-primary">Sistema Seguro</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Análise de IA protegida e segura. Suas imagens são processadas com total privacidade.
+                  </p>
                 </div>
-              </Card>
-            )}
+              </div>
+            </Card>
           </div>
         ) : (
           /* Image Analysis */
@@ -179,9 +179,18 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
               <Card className="bg-destructive/10 border-destructive/20 p-4 animate-fade-in">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-destructive mt-0.5" />
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-medium text-destructive">Erro na Análise</h4>
                     <p className="text-sm text-muted-foreground mt-1">{error}</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-3"
+                      onClick={retryAnalysis}
+                    >
+                      <RefreshCw size={16} className="mr-2" />
+                      Tentar Novamente
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -295,9 +304,8 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
                 onClick={analyzeImage}
                 className="w-full btn-primary"
                 size="lg"
-                disabled={!openaiService.hasApiKey()}
               >
-                {!openaiService.hasApiKey() ? 'Configure a API Key primeiro' : 'Analisar com IA'}
+                Analisar com IA
               </Button>
             )}
           </div>
