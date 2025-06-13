@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { X, Camera, Upload, AlertCircle, Wifi, RefreshCw } from 'lucide-react';
+import { X, Camera, Upload, AlertCircle, Wifi, RefreshCw, Info } from 'lucide-react';
 import { openaiService } from '@/lib/openai';
 import { toast } from '@/hooks/use-toast';
 
@@ -20,11 +20,21 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
+      // Check file size (max 4MB como validado no backend)
+      if (file.size > 4 * 1024 * 1024) {
         toast({
           title: 'Arquivo muito grande',
-          description: 'Por favor, selecione uma imagem menor que 5MB.',
+          description: 'Por favor, selecione uma imagem menor que 4MB.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Tipo de arquivo inválido',
+          description: 'Por favor, selecione apenas arquivos de imagem.',
           variant: 'destructive'
         });
         return;
@@ -34,6 +44,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
         setError(null);
+        setAnalysisResult(null);
       };
       reader.readAsDataURL(file);
     }
@@ -50,8 +61,11 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
       const base64Data = selectedImage.split(',')[1];
       
       console.log('Iniciando análise da imagem...');
+      console.log('Tamanho da imagem (base64):', base64Data.length, 'caracteres');
       
       const result = await openaiService.analyzeImage(base64Data);
+      console.log('Resultado da análise:', result);
+      
       setAnalysisResult(result);
 
       toast({
@@ -90,6 +104,11 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
       };
       
       onMealAdded(meal);
+      
+      toast({
+        title: 'Refeição adicionada!',
+        description: 'Sua refeição foi salva no diário.',
+      });
     }
     onClose();
   };
@@ -97,6 +116,15 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
   const retryAnalysis = () => {
     setError(null);
     analyzeImage();
+  };
+
+  const resetImage = () => {
+    setSelectedImage(null);
+    setAnalysisResult(null);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -154,6 +182,21 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
 
             <Card className="bg-muted/20 border-primary/20 p-4 animate-fade-in">
               <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-primary">Dicas para melhor análise</h4>
+                  <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                    <li>• Use boa iluminação</li>
+                    <li>• Mostre toda a refeição</li>
+                    <li>• Evite sombras na foto</li>
+                    <li>• Máximo 4MB por imagem</li>
+                  </ul>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-muted/20 border-primary/20 p-4 animate-fade-in">
+              <div className="flex items-start gap-3">
                 <Wifi className="w-5 h-5 text-primary mt-0.5" />
                 <div>
                   <h4 className="font-medium text-primary">Sistema Seguro</h4>
@@ -182,15 +225,24 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
                   <div className="flex-1">
                     <h4 className="font-medium text-destructive">Erro na Análise</h4>
                     <p className="text-sm text-muted-foreground mt-1">{error}</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-3"
-                      onClick={retryAnalysis}
-                    >
-                      <RefreshCw size={16} className="mr-2" />
-                      Tentar Novamente
-                    </Button>
+                    <div className="flex gap-2 mt-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={retryAnalysis}
+                        disabled={isAnalyzing}
+                      >
+                        <RefreshCw size={16} className="mr-2" />
+                        Tentar Novamente
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={resetImage}
+                      >
+                        Nova Foto
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -202,6 +254,9 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
                 <h3 className="text-subheading mb-2">Analisando com IA</h3>
                 <p className="text-body text-muted-foreground">
                   Nossa IA está identificando os alimentos e calculando os nutrientes...
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Isso pode levar alguns segundos...
                 </p>
               </Card>
             ) : analysisResult ? (
@@ -282,11 +337,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
                 <div className="grid grid-cols-2 gap-3">
                   <Button 
                     variant="outline"
-                    onClick={() => {
-                      setSelectedImage(null);
-                      setAnalysisResult(null);
-                      setError(null);
-                    }}
+                    onClick={resetImage}
                     className="btn-secondary"
                   >
                     Nova Foto
@@ -299,13 +350,14 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
                   </Button>
                 </div>
               </div>
-            ) : (
+            ) : !error && (
               <Button 
                 onClick={analyzeImage}
                 className="w-full btn-primary"
                 size="lg"
+                disabled={isAnalyzing}
               >
-                Analisar com IA
+                {isAnalyzing ? 'Analisando...' : 'Analisar com IA'}
               </Button>
             )}
           </div>

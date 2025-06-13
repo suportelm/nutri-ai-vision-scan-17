@@ -35,18 +35,38 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('=== Iniciando análise de imagem ===');
+    
     const { imageBase64 }: AnalyzeImageRequest = await req.json();
 
     if (!imageBase64) {
+      console.error('Erro: Imagem não fornecida');
       throw new Error('Imagem é obrigatória');
     }
 
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      throw new Error('Chave da API OpenAI não configurada');
+    // Validar tamanho da imagem (máximo ~4MB em base64)
+    if (imageBase64.length > 5500000) {
+      console.error('Erro: Imagem muito grande');
+      throw new Error('Imagem muito grande. Máximo 4MB.');
     }
 
-    console.log('Analisando imagem com OpenAI...');
+    // Verificar se a chave da OpenAI está configurada
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiApiKey) {
+      console.error('Erro: OPENAI_API_KEY não configurada no ambiente');
+      throw new Error('Chave da API OpenAI não configurada no servidor');
+    }
+
+    // Verificar se a chave não está vazia ou mal formatada
+    if (openaiApiKey.length < 10 || !openaiApiKey.startsWith('sk-')) {
+      console.error('Erro: OPENAI_API_KEY mal formatada:', openaiApiKey.substring(0, 10) + '...');
+      throw new Error('Chave da API OpenAI mal formatada');
+    }
+
+    console.log('Chave OpenAI configurada corretamente');
+    console.log('Tamanho da imagem:', imageBase64.length, 'caracteres');
+    
+    console.log('Enviando requisição para OpenAI...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -59,8 +79,8 @@ const handler = async (req: Request): Promise<Response> => {
         messages: [
           {
             role: 'system',
-            content: `Você é um especialista em nutrição. Analise imagens de alimentos e forneça informações nutricionais detalhadas em português. 
-            Retorne uma resposta JSON com a seguinte estrutura:
+            content: `Você é um especialista em nutrição. Analise imagens de alimentos e forneça informações nutricionais detalhadas em português brasileiro. 
+            Retorne APENAS uma resposta JSON válida com esta estrutura exata:
             {
               "foods": [{"name": "nome do alimento", "portion": "porção estimada", "confidence": 0.85}],
               "nutrition": {"calories": 450, "protein": 25, "carbs": 45, "fat": 15, "fiber": 8, "sugar": 12},
@@ -72,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
             content: [
               {
                 type: 'text',
-                text: 'Analise esta imagem de refeição e forneça informações nutricionais detalhadas em formato JSON.'
+                text: 'Analise esta imagem de refeição e forneça informações nutricionais detalhadas em formato JSON válido.'
               },
               {
                 type: 'image_url',
@@ -88,32 +108,72 @@ const handler = async (req: Request): Promise<Response> => {
       })
     });
 
-    console.log('OpenAI Response status:', response.status);
+    console.log('Status da resposta OpenAI:', response.status);
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API Error:', errorData);
-      throw new Error(`Erro na API OpenAI: ${response.status} - ${errorData.error?.message || 'Erro desconhecido'}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Erro da OpenAI API:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      
+      if (response.status === 401) {
+        throw new Error('Chave da API OpenAI inválida ou expirada');
+      } else if (response.status === 429) {
+        throw new Error('Limite de uso da API OpenAI excedido. Tente novamente em alguns minutos.');
+      } else if (response.status === 413) {
+        throw new Error('Imagem muito grande para a API OpenAI');
+      } else {
+        throw new Error(`Erro na API OpenAI: ${response.status} - ${errorData.error?.message || 'Erro desconhecido'}`);
+      }
     }
 
     const data = await response.json();
-    console.log('OpenAI Response recebida');
+    console.log('Resposta recebida da OpenAI');
     
-    const content = data.choices[0]?.message?.content;
+    const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
-      throw new Error('Nenhuma resposta da OpenAI');
+      console.error('Nenhum conteúdo na resposta da OpenAI');
+      throw new Error('Nenhuma resposta válida da OpenAI');
     }
 
-    // Parse JSON response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    console.log('Conteúdo bruto da OpenAI:', content.substring(0, 200) + '...');
+
+    // Parse JSON response com melhor tratamento
+    let jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.log('Conteúdo bruto:', content);
-      throw new Error('Resposta JSON inválida da OpenAI');
+      // Tentar encontrar JSON em blocos de código
+      jsonMatch = content.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+      if (jsonMatch) {
+        jsonMatch[0] = jsonMatch[1];
+      }
+    }
+    
+    if (!jsonMatch) {
+      console.error('Resposta não contém JSON válido:', content);
+      throw new Error('Resposta da OpenAI não está em formato JSON válido');
     }
 
-    const result: OpenAIResponse = JSON.parse(jsonMatch[0]);
+    let result: OpenAIResponse;
+    try {
+      result = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      console.error('Erro ao fazer parse do JSON:', parseError);
+      console.error('JSON problemático:', jsonMatch[0]);
+      throw new Error('Formato JSON inválido na resposta da OpenAI');
+    }
+
+    // Validar estrutura da resposta
+    if (!result.foods || !result.nutrition || !result.recommendations) {
+      console.error('Estrutura de resposta inválida:', result);
+      throw new Error('Estrutura de resposta inválida da OpenAI');
+    }
+
     console.log('Análise concluída com sucesso');
+    console.log('Alimentos detectados:', result.foods.length);
+    console.log('Calorias:', result.nutrition.calories);
     
     return new Response(JSON.stringify(result), {
       status: 200,
@@ -123,11 +183,31 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
-    console.error('Erro na análise:', error);
+    console.error('=== ERRO NA ANÁLISE ===');
+    console.error('Tipo:', error.constructor.name);
+    console.error('Mensagem:', error.message);
+    console.error('Stack:', error.stack);
+    
+    // Mensagens de erro mais específicas para o usuário
+    let userMessage = 'Erro interno do servidor';
+    
+    if (error.message.includes('API key') || error.message.includes('401')) {
+      userMessage = 'Configuração da API inválida. Contate o administrador.';
+    } else if (error.message.includes('muito grande')) {
+      userMessage = 'Imagem muito grande. Use uma imagem menor que 4MB.';
+    } else if (error.message.includes('limite') || error.message.includes('429')) {
+      userMessage = 'Serviço temporariamente sobrecarregado. Tente novamente em alguns minutos.';
+    } else if (error.message.includes('JSON')) {
+      userMessage = 'Erro no processamento da resposta. Tente novamente.';
+    } else if (error.message.includes('rede') || error.message.includes('network')) {
+      userMessage = 'Erro de conexão. Verifique sua internet.';
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: 'Erro ao analisar a imagem', 
-        details: error.message 
+        error: userMessage,
+        details: error.message,
+        timestamp: new Date().toISOString()
       }),
       {
         status: 500,
