@@ -1,26 +1,74 @@
 
 {
-  "name": "NutriAI Vision",
+  "name": "NutriAI Vision - Nutrition Tracking with AI",
   "short_name": "NutriAI",
-  "description": "AI-powered nutrition tracking app with meal scanning",
-  "theme_color": "#1e293b",
+  "description": "AI-powered nutrition tracking app with meal scanning and personalized meal plans",
+  "theme_color": "#3b82f6",
   "background_color": "#0f172a",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "scope": "/",
   "start_url": "/",
+  "categories": ["health", "fitness", "nutrition", "lifestyle"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/placeholder.svg",
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/placeholder.svg", 
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/lovable-uploads/e80ce5c4-5d11-4bce-b774-e97bb9bb0106.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }

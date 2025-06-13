@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Camera, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,15 +9,19 @@ import MacroStats from '@/components/MacroStats';
 import QuickActions from '@/components/QuickActions';
 import BottomNav from '@/components/BottomNav';
 import Auth from '@/components/Auth';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import Diary from './Diary';
 import Plans from './Plans';
 import Stats from './Stats';
 import Profile from './Profile';
+import { usePWA } from '@/hooks/usePWA';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showScanner, setShowScanner] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { updateInfo, isOnline, updateApp } = usePWA();
+  
   const [meals, setMeals] = useState([
     {
       id: '1',
@@ -65,27 +70,30 @@ const Index = () => {
   // Render different pages based on active tab
   if (activeTab === 'diary') {
     return (
-      <div>
+      <div className="no-scroll-x">
         <Diary />
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <PWAInstallPrompt />
       </div>
     );
   }
 
   if (activeTab === 'stats') {
     return (
-      <div>
+      <div className="no-scroll-x">
         <Stats />
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <PWAInstallPrompt />
       </div>
     );
   }
 
   if (activeTab === 'profile') {
     return (
-      <div>
+      <div className="no-scroll-x">
         <Profile />
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <PWAInstallPrompt />
       </div>
     );
   }
@@ -95,9 +103,24 @@ const Index = () => {
   const userName = localStorage.getItem('user_name') || 'Usuário';
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground no-scroll-x">
+      {/* Update notification */}
+      {updateInfo.updateAvailable && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-primary text-primary-foreground p-3 text-center">
+          <p className="text-sm">Nova versão disponível!</p>
+          <Button 
+            onClick={updateApp} 
+            size="sm" 
+            variant="secondary" 
+            className="mt-1"
+          >
+            Atualizar
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="relative">
+      <div className="relative pwa-safe-area">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
         <div className="relative flex items-center justify-between p-6 pt-12">
           <div className="flex items-center gap-3 animate-fade-in">
@@ -106,7 +129,14 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-heading">NutriAI Vision</h1>
-              <p className="text-caption">Olá, {userName}!</p>
+              <div className="flex items-center gap-2">
+                <p className="text-caption">Olá, {userName}!</p>
+                {!isOnline && (
+                  <span className="text-xs bg-destructive/20 text-destructive px-2 py-1 rounded">
+                    Offline
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <Button 
@@ -184,9 +214,10 @@ const Index = () => {
           onClick={handleScanMeal}
           className="w-full mt-6 btn-primary text-white py-4 text-lg"
           size="lg"
+          disabled={!isOnline}
         >
           <Plus size={24} className="mr-3" />
-          Escanear Nova Refeição
+          {isOnline ? 'Escanear Nova Refeição' : 'Funcionalidade Offline'}
         </Button>
 
         {/* Quick Links */}
@@ -210,6 +241,9 @@ const Index = () => {
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </div>
   );
 };

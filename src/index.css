@@ -74,9 +74,35 @@
     @apply border-border;
   }
 
+  html {
+    /* Prevent overscroll bounce */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    /* Fix for iOS safe areas */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     background: radial-gradient(ellipse at top, hsl(var(--nutriai-background)) 0%, hsl(0 0% 2%) 100%);
+    /* Prevent overscroll and rubber band effect */
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #root {
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    /* iOS safe areas */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* Typography System */
@@ -98,6 +124,21 @@
   
   .text-caption {
     @apply text-xs text-muted-foreground;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .text-display {
+      @apply text-3xl;
+    }
+    
+    .text-heading {
+      @apply text-xl;
+    }
+    
+    .text-subheading {
+      @apply text-base;
+    }
   }
 
   /* Animation utilities */
@@ -155,6 +196,30 @@
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Mobile specific adjustments */
+  @media (max-width: 768px) {
+    .btn-primary, .btn-secondary {
+      @apply px-4 py-2.5 text-sm;
+    }
+    
+    .card-interactive {
+      @apply hover:scale-100 active:scale-98;
+    }
+  }
+
+  /* PWA specific styles */
+  .pwa-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Prevent horizontal scroll */
+  .no-scroll-x {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
 }
 
@@ -244,4 +309,29 @@
 
 .notification-info {
   @apply bg-primary/20 border-primary/30 text-primary;
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .ios-fix {
+    -webkit-appearance: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Fix for iOS input zoom */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"], 
+  textarea, 
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Android specific fixes */
+@media screen and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) {
+  .android-fix {
+    -webkit-text-size-adjust: 100%;
+  }
 }
