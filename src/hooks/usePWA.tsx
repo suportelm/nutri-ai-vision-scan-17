@@ -47,12 +47,16 @@ export const usePWA = () => {
       });
 
       // Detectar Service Worker aguardando
-      const handleSWUpdate = (event: any) => {
-        const worker = event.detail?.waiting || event.waiting;
-        if (worker) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+
+      // Escutar por novos service workers
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATE_AVAILABLE') {
           setUpdateInfo({
             updateAvailable: true,
-            waitingWorker: worker
+            waitingWorker: event.data.worker
           });
           
           toast({
@@ -60,14 +64,7 @@ export const usePWA = () => {
             description: "Uma nova versão do app está disponível!",
           });
         }
-      };
-
-      // Escutar eventos de atualização
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
       });
-
-      window.addEventListener('swUpdated', handleSWUpdate);
     }
 
     // Detectar prompt de instalação
@@ -82,9 +79,6 @@ export const usePWA = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      if ('serviceWorker' in navigator) {
-        window.removeEventListener('swUpdated', handleSWUpdate);
-      }
     };
   }, []);
 
