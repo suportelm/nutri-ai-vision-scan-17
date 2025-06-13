@@ -41,6 +41,14 @@ export class OpenAIService {
 
       if (error) {
         console.error('Erro no Edge Function:', error);
+        
+        // Verificar se o erro contém informações sobre a chave da API
+        if (error.message?.includes('inválida') || error.message?.includes('401')) {
+          throw new Error('❌ Chave da API OpenAI inválida.\n\nPor favor:\n1. Verifique se você inseriu a chave correta no Supabase\n2. Certifique-se de que a chave começa com "sk-"\n3. Confirme que a chave não expirou');
+        } else if (error.message?.includes('não configurada') || error.message?.includes('não encontrada')) {
+          throw new Error('❌ Chave da API OpenAI não encontrada.\n\nConfigurção necessária:\n1. Acesse o painel do Supabase\n2. Vá em Project Settings > Environment Variables\n3. Adicione OPENAI_API_KEY com sua chave válida');
+        }
+        
         throw new Error(error.message || 'Erro ao analisar a imagem');
       }
 
@@ -48,16 +56,27 @@ export class OpenAIService {
         throw new Error('Nenhum dado retornado da análise');
       }
 
+      // Verificar se há informações de debug no erro
+      if (data.error) {
+        console.error('Erro detalhado:', data);
+        throw new Error(data.error);
+      }
+
       console.log('Análise concluída com sucesso:', data);
       return data;
     } catch (error: any) {
       console.error('Erro na análise da imagem:', error);
       
-      // Tratamento de erro amigável para o usuário
+      // Manter a mensagem original se já for específica sobre API key
+      if (error.message?.includes('❌') || error.message?.includes('Chave da API')) {
+        throw error;
+      }
+      
+      // Tratamento de erro amigável para outros casos
       let errorMessage = 'Não foi possível analisar a imagem. Tente novamente.';
       
       if (error.message?.includes('API')) {
-        errorMessage = 'Serviço temporariamente indisponível. Tente novamente em alguns instantes.';
+        errorMessage = 'Problema com a configuração da API. Verifique as configurações no Supabase.';
       } else if (error.message?.includes('rede') || error.message?.includes('network')) {
         errorMessage = 'Verifique sua conexão com a internet e tente novamente.';
       }

@@ -52,18 +52,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Verificar se a chave da OpenAI está configurada
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    console.log('Verificando configuração da chave OpenAI...');
+    
     if (!openaiApiKey) {
-      console.error('Erro: OPENAI_API_KEY não configurada no ambiente');
-      throw new Error('Chave da API OpenAI não configurada no servidor');
+      console.error('ERRO CRÍTICO: OPENAI_API_KEY não encontrada no ambiente');
+      throw new Error('Chave da API OpenAI não está configurada no servidor. Verifique as configurações do Supabase.');
     }
 
-    // Verificar se a chave não está vazia ou mal formatada
-    if (openaiApiKey.length < 10 || !openaiApiKey.startsWith('sk-')) {
-      console.error('Erro: OPENAI_API_KEY mal formatada:', openaiApiKey.substring(0, 10) + '...');
-      throw new Error('Chave da API OpenAI mal formatada');
+    // Verificar formato da chave
+    if (!openaiApiKey.startsWith('sk-')) {
+      console.error('ERRO: Chave OpenAI não tem formato válido');
+      throw new Error('Chave da API OpenAI tem formato inválido. Deve começar com "sk-"');
     }
 
-    console.log('Chave OpenAI configurada corretamente');
+    if (openaiApiKey.length < 20) {
+      console.error('ERRO: Chave OpenAI muito curta');
+      throw new Error('Chave da API OpenAI parece estar incompleta');
+    }
+
+    console.log('✓ Chave OpenAI encontrada e formato válido');
     console.log('Tamanho da imagem:', imageBase64.length, 'caracteres');
     
     console.log('Enviando requisição para OpenAI...');
@@ -112,15 +119,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Erro da OpenAI API:', {
+      console.error('Erro detalhado da OpenAI:', {
         status: response.status,
         statusText: response.statusText,
         error: errorData
       });
       
       if (response.status === 401) {
-        throw new Error('Chave da API OpenAI inválida ou expirada');
+        console.error('❌ ERRO 401: Chave da API inválida ou expirada');
+        throw new Error('A chave da API OpenAI está inválida ou expirada. Verifique se você inseriu a chave correta no Supabase.');
       } else if (response.status === 429) {
+        console.error('❌ ERRO 429: Limite de uso excedido');
         throw new Error('Limite de uso da API OpenAI excedido. Tente novamente em alguns minutos.');
       } else if (response.status === 413) {
         throw new Error('Imagem muito grande para a API OpenAI');
@@ -130,7 +139,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const data = await response.json();
-    console.log('Resposta recebida da OpenAI');
+    console.log('✓ Resposta recebida da OpenAI com sucesso');
     
     const content = data.choices?.[0]?.message?.content;
     
@@ -171,7 +180,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Estrutura de resposta inválida da OpenAI');
     }
 
-    console.log('Análise concluída com sucesso');
+    console.log('✓ Análise concluída com sucesso');
     console.log('Alimentos detectados:', result.foods.length);
     console.log('Calorias:', result.nutrition.calories);
     
@@ -191,8 +200,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Mensagens de erro mais específicas para o usuário
     let userMessage = 'Erro interno do servidor';
     
-    if (error.message.includes('API key') || error.message.includes('401')) {
-      userMessage = 'Configuração da API inválida. Contate o administrador.';
+    if (error.message.includes('não está configurada') || error.message.includes('não encontrada')) {
+      userMessage = 'Chave da API OpenAI não configurada. Entre em contato com o administrador.';
+    } else if (error.message.includes('inválida') || error.message.includes('expirada') || error.message.includes('401')) {
+      userMessage = 'Chave da API OpenAI inválida. Verifique se a chave está correta no painel do Supabase.';
     } else if (error.message.includes('muito grande')) {
       userMessage = 'Imagem muito grande. Use uma imagem menor que 4MB.';
     } else if (error.message.includes('limite') || error.message.includes('429')) {
@@ -207,7 +218,11 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         error: userMessage,
         details: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        debug: {
+          hasApiKey: !!Deno.env.get('OPENAI_API_KEY'),
+          keyFormat: Deno.env.get('OPENAI_API_KEY')?.startsWith('sk-') || false
+        }
       }),
       {
         status: 500,
