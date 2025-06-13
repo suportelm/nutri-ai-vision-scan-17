@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthProps {
   onAuthSuccess: () => void;
@@ -15,14 +16,14 @@ const Auth = ({ onAuthSuccess }: AuthProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || (!isLogin && !name)) {
+    if (!email || !password || (!isLogin && !fullName)) {
       toast({
         title: 'Erro',
         description: 'Por favor, preencha todos os campos.',
@@ -32,21 +33,66 @@ const Auth = ({ onAuthSuccess }: AuthProps) => {
     }
 
     setIsLoading(true);
-    
-    // Simular autenticação
-    setTimeout(() => {
-      localStorage.setItem('user_authenticated', 'true');
-      localStorage.setItem('user_email', email);
-      localStorage.setItem('user_name', name || email.split('@')[0]);
-      
+
+    try {
+      if (isLogin) {
+        // Login
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          toast({
+            title: 'Sucesso!',
+            description: 'Login realizado com sucesso!',
+          });
+          onAuthSuccess();
+        }
+      } else {
+        // Cadastro
+        const redirectUrl = `${window.location.origin}/`;
+        
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectUrl,
+            data: {
+              full_name: fullName,
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          toast({
+            title: 'Sucesso!',
+            description: 'Conta criada com sucesso! Verifique seu email para confirmar.',
+          });
+          
+          // Se o usuário foi criado e confirmado automaticamente
+          if (data.user.email_confirmed_at) {
+            onAuthSuccess();
+          } else {
+            // Aguardar confirmação por email
+            setIsLogin(true);
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
-        title: 'Sucesso!',
-        description: isLogin ? 'Login realizado com sucesso!' : 'Conta criada com sucesso!',
+        title: 'Erro',
+        description: error.message || 'Ocorreu um erro durante a autenticação.',
+        variant: 'destructive'
       });
-      
-      onAuthSuccess();
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -65,13 +111,13 @@ const Auth = ({ onAuthSuccess }: AuthProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div className="space-y-2">
-              <Label htmlFor="name">Nome Completo</Label>
+              <Label htmlFor="fullName">Nome Completo</Label>
               <div className="relative">
                 <Input
-                  id="name"
+                  id="fullName"
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Seu nome completo"
                   className="pl-10"
                 />

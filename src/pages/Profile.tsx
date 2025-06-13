@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   User, 
   Target, 
@@ -13,35 +15,44 @@ import {
   LogOut,
   Edit,
   ChevronRight,
-  Camera
+  Camera,
+  Save
 } from 'lucide-react';
 import GoalsSettings from '@/components/GoalsSettings';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 
 const Profile = () => {
+  const { signOut } = useAuth();
+  const { profile, updateProfile, isUpdating } = useProfile();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showGoalsSettings, setShowGoalsSettings] = useState(false);
-  const [userProfile, setUserProfile] = useState({
-    name: localStorage.getItem('user_name') || 'Maria Silva',
-    email: localStorage.getItem('user_email') || 'maria.silva@email.com',
-    age: 28,
-    weight: 65,
-    height: 165,
-    activityLevel: 'Moderadamente Ativo',
-    goal: 'Perder Peso',
-    joinDate: '15/10/2023'
+  
+  const [formData, setFormData] = useState({
+    full_name: profile?.full_name || '',
+    age: profile?.age || '',
+    weight: profile?.weight || '',
+    height: profile?.height || '',
+    activity_level: profile?.activity_level || 'moderado',
+    goal: profile?.goal || 'manter_peso',
+    daily_calorie_goal: profile?.daily_calorie_goal || 2000,
   });
 
   const handleSaveProfile = () => {
+    updateProfile({
+      full_name: formData.full_name,
+      age: formData.age ? parseInt(formData.age.toString()) : null,
+      weight: formData.weight ? parseFloat(formData.weight.toString()) : null,
+      height: formData.height ? parseInt(formData.height.toString()) : null,
+      activity_level: formData.activity_level,
+      goal: formData.goal,
+      daily_calorie_goal: formData.daily_calorie_goal,
+    });
     setIsEditingProfile(false);
-    localStorage.setItem('user_name', userProfile.name);
-    localStorage.setItem('user_email', userProfile.email);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user_authenticated');
-    localStorage.removeItem('user_email');
-    localStorage.removeItem('user_name');
-    window.location.reload();
+  const handleLogout = async () => {
+    await signOut();
   };
 
   const menuItems = [
@@ -72,9 +83,9 @@ const Profile = () => {
   ];
 
   const achievements = [
-    { name: '7 Dias Consecutivos', color: 'bg-primary' },
-    { name: 'Meta de Proteína', color: 'bg-secondary' },
-    { name: 'Primeiro Scan', color: 'bg-accent' }
+    { name: 'Primeiro Login', color: 'bg-primary' },
+    { name: 'Perfil Completo', color: 'bg-secondary' },
+    { name: 'Primeira Refeição', color: 'bg-accent' }
   ];
 
   if (showGoalsSettings) {
@@ -90,9 +101,25 @@ const Profile = () => {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => setIsEditingProfile(!isEditingProfile)}
+            onClick={() => {
+              if (isEditingProfile) {
+                handleSaveProfile();
+              } else {
+                setIsEditingProfile(true);
+                setFormData({
+                  full_name: profile?.full_name || '',
+                  age: profile?.age || '',
+                  weight: profile?.weight || '',
+                  height: profile?.height || '',
+                  activity_level: profile?.activity_level || 'moderado',
+                  goal: profile?.goal || 'manter_peso',
+                  daily_calorie_goal: profile?.daily_calorie_goal || 2000,
+                });
+              }
+            }}
+            disabled={isUpdating}
           >
-            <Edit size={16} />
+            {isEditingProfile ? <Save size={16} /> : <Edit size={16} />}
           </Button>
         </div>
       </div>
@@ -114,10 +141,10 @@ const Profile = () => {
             </div>
             
             <div className="flex-1">
-              <h2 className="text-xl font-semibold">{userProfile.name}</h2>
-              <p className="text-muted-foreground">{userProfile.email}</p>
+              <h2 className="text-xl font-semibold">{profile?.full_name || 'Usuário'}</h2>
+              <p className="text-muted-foreground">{profile?.email}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Membro desde {userProfile.joinDate}
+                Membro desde {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'hoje'}
               </p>
             </div>
           </div>
@@ -125,15 +152,15 @@ const Profile = () => {
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/30">
             <div className="text-center">
-              <p className="text-sm font-medium">{userProfile.weight}kg</p>
+              <p className="text-sm font-medium">{profile?.weight || '--'}kg</p>
               <p className="text-xs text-muted-foreground">Peso</p>
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium">{userProfile.height}cm</p>
+              <p className="text-sm font-medium">{profile?.height || '--'}cm</p>
               <p className="text-xs text-muted-foreground">Altura</p>
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium">{userProfile.age}</p>
+              <p className="text-sm font-medium">{profile?.age || '--'}</p>
               <p className="text-xs text-muted-foreground">Anos</p>
             </div>
           </div>
@@ -143,11 +170,6 @@ const Profile = () => {
         <Card className="bg-gradient-card border-border/50 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-subheading">Informações Pessoais</h3>
-            {isEditingProfile && (
-              <Button size="sm" onClick={handleSaveProfile} className="bg-primary">
-                Salvar
-              </Button>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -156,9 +178,9 @@ const Profile = () => {
                 <Label htmlFor="name">Nome</Label>
                 <Input
                   id="name"
-                  value={userProfile.name}
+                  value={formData.full_name}
                   disabled={!isEditingProfile}
-                  onChange={(e) => setUserProfile({...userProfile, name: e.target.value})}
+                  onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                 />
               </div>
               <div>
@@ -166,9 +188,9 @@ const Profile = () => {
                 <Input
                   id="age"
                   type="number"
-                  value={userProfile.age}
+                  value={formData.age}
                   disabled={!isEditingProfile}
-                  onChange={(e) => setUserProfile({...userProfile, age: parseInt(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, age: e.target.value})}
                 />
               </div>
             </div>
@@ -179,9 +201,10 @@ const Profile = () => {
                 <Input
                   id="weight"
                   type="number"
-                  value={userProfile.weight}
+                  step="0.1"
+                  value={formData.weight}
                   disabled={!isEditingProfile}
-                  onChange={(e) => setUserProfile({...userProfile, weight: parseInt(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, weight: e.target.value})}
                 />
               </div>
               <div>
@@ -189,30 +212,60 @@ const Profile = () => {
                 <Input
                   id="height"
                   type="number"
-                  value={userProfile.height}
+                  value={formData.height}
                   disabled={!isEditingProfile}
-                  onChange={(e) => setUserProfile({...userProfile, height: parseInt(e.target.value)})}
+                  onChange={(e) => setFormData({...formData, height: e.target.value})}
                 />
               </div>
             </div>
 
             <div>
               <Label htmlFor="goal">Objetivo Principal</Label>
-              <Input
-                id="goal"
-                value={userProfile.goal}
+              <Select 
+                value={formData.goal} 
+                onValueChange={(value) => setFormData({...formData, goal: value})}
                 disabled={!isEditingProfile}
-                onChange={(e) => setUserProfile({...userProfile, goal: e.target.value})}
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione seu objetivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="perder_peso">Perder Peso</SelectItem>
+                  <SelectItem value="manter_peso">Manter Peso</SelectItem>
+                  <SelectItem value="ganhar_peso">Ganhar Peso</SelectItem>
+                  <SelectItem value="ganhar_massa">Ganhar Massa Muscular</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
               <Label htmlFor="activity">Nível de Atividade</Label>
-              <Input
-                id="activity"
-                value={userProfile.activityLevel}
+              <Select 
+                value={formData.activity_level} 
+                onValueChange={(value) => setFormData({...formData, activity_level: value})}
                 disabled={!isEditingProfile}
-                onChange={(e) => setUserProfile({...userProfile, activityLevel: e.target.value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione seu nível" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sedentario">Sedentário</SelectItem>
+                  <SelectItem value="leve">Levemente Ativo</SelectItem>
+                  <SelectItem value="moderado">Moderadamente Ativo</SelectItem>
+                  <SelectItem value="intenso">Muito Ativo</SelectItem>
+                  <SelectItem value="extremo">Extremamente Ativo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="calories">Meta Diária de Calorias</Label>
+              <Input
+                id="calories"
+                type="number"
+                value={formData.daily_calorie_goal}
+                disabled={!isEditingProfile}
+                onChange={(e) => setFormData({...formData, daily_calorie_goal: parseInt(e.target.value)})}
               />
             </div>
           </div>
@@ -220,7 +273,7 @@ const Profile = () => {
 
         {/* Achievements */}
         <Card className="bg-gradient-card border-border/50 p-6">
-          <h3 className="text-subheading mb-4">Conquistas Recentes</h3>
+          <h3 className="text-subheading mb-4">Conquistas</h3>
           <div className="flex flex-wrap gap-2">
             {achievements.map((achievement, index) => (
               <Badge 

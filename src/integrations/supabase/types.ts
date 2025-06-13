@@ -9,7 +9,192 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      daily_progress: {
+        Row: {
+          created_at: string
+          date: string
+          exercise_minutes: number | null
+          id: string
+          total_calories: number | null
+          total_carbs: number | null
+          total_fats: number | null
+          total_fiber: number | null
+          total_proteins: number | null
+          updated_at: string
+          user_id: string
+          water_intake: number | null
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          exercise_minutes?: number | null
+          id?: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          updated_at?: string
+          user_id: string
+          water_intake?: number | null
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          exercise_minutes?: number | null
+          id?: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          updated_at?: string
+          user_id?: string
+          water_intake?: number | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_images: {
+        Row: {
+          analysis_data: Json | null
+          created_at: string
+          id: string
+          image_url: string
+          meal_id: string
+        }
+        Insert: {
+          analysis_data?: Json | null
+          created_at?: string
+          id?: string
+          image_url: string
+          meal_id: string
+        }
+        Update: {
+          analysis_data?: Json | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          meal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_images_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meals: {
+        Row: {
+          calories: number
+          carbs: number | null
+          consumed_at: string
+          created_at: string
+          fats: number | null
+          fiber: number | null
+          id: string
+          image_url: string | null
+          meal_type: string | null
+          name: string
+          proteins: number | null
+          sodium: number | null
+          user_id: string
+        }
+        Insert: {
+          calories: number
+          carbs?: number | null
+          consumed_at?: string
+          created_at?: string
+          fats?: number | null
+          fiber?: number | null
+          id?: string
+          image_url?: string | null
+          meal_type?: string | null
+          name: string
+          proteins?: number | null
+          sodium?: number | null
+          user_id: string
+        }
+        Update: {
+          calories?: number
+          carbs?: number | null
+          consumed_at?: string
+          created_at?: string
+          fats?: number | null
+          fiber?: number | null
+          id?: string
+          image_url?: string | null
+          meal_type?: string | null
+          name?: string
+          proteins?: number | null
+          sodium?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          created_at: string
+          daily_calorie_goal: number | null
+          email: string | null
+          full_name: string | null
+          goal: string | null
+          height: number | null
+          id: string
+          updated_at: string
+          weight: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          daily_calorie_goal?: number | null
+          email?: string | null
+          full_name?: string | null
+          goal?: string | null
+          height?: number | null
+          id: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          daily_calorie_goal?: number | null
+          email?: string | null
+          full_name?: string | null
+          goal?: string | null
+          height?: number | null
+          id?: string
+          updated_at?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

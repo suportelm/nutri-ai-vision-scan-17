@@ -15,48 +15,42 @@ import Plans from './Plans';
 import Stats from './Stats';
 import Profile from './Profile';
 import { usePWA } from '@/hooks/usePWA';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { useMeals } from '@/hooks/useMeals';
+import { useDailyProgress } from '@/hooks/useDailyProgress';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showScanner, setShowScanner] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const { updateInfo, isOnline, updateApp } = usePWA();
   
-  const [meals, setMeals] = useState([
-    {
-      id: '1',
-      name: 'Café da Manhã - Aveia com Frutas',
-      time: '08:30',
-      calories: 320,
-      image: '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png'
-    },
-    {
-      id: '2',
-      name: 'Almoço - Salmão Grelhado',
-      time: '12:45',
-      calories: 680,
-      image: '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png'
-    }
-  ]);
+  const { user, loading: authLoading } = useAuth();
+  const { profile } = useProfile();
+  const { todayMeals, createMeal } = useMeals();
+  const { progress } = useDailyProgress();
+  const { updateInfo, isOnline, updateApp } = usePWA();
 
-  useEffect(() => {
-    // Check authentication status
-    const authStatus = localStorage.getItem('user_authenticated');
-    setIsAuthenticated(authStatus === 'true');
-  }, []);
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="loading-spinner" />
+      </div>
+    );
+  }
+
+  // Show authentication screen if not logged in
+  if (!user) {
+    return <Auth onAuthSuccess={() => {}} />;
+  }
 
   const handleMealAdded = (newMeal: any) => {
-    setMeals(prev => [...prev, newMeal]);
+    createMeal(newMeal);
   };
 
   const handleScanMeal = () => {
     setShowScanner(true);
   };
-
-  // Show authentication screen if not logged in
-  if (!isAuthenticated) {
-    return <Auth onAuthSuccess={() => setIsAuthenticated(true)} />;
-  }
 
   if (showScanner) {
     return (
@@ -99,8 +93,9 @@ const Index = () => {
   }
 
   // Dashboard/Home view
-  const totalCalories = meals.reduce((sum, meal) => sum + meal.calories, 0);
-  const userName = localStorage.getItem('user_name') || 'Usuário';
+  const totalCalories = progress?.total_calories || 0;
+  const dailyGoal = profile?.daily_calorie_goal || 2000;
+  const userName = profile?.full_name || user.email?.split('@')[0] || 'Usuário';
 
   return (
     <div className="min-h-screen bg-background text-foreground no-scroll-x">
@@ -167,8 +162,8 @@ const Index = () => {
         <div className="animate-fade-in">
           <CalorieProgress 
             current={totalCalories} 
-            goal={2200} 
-            remaining={2200 - totalCalories}
+            goal={dailyGoal} 
+            remaining={dailyGoal - totalCalories}
           />
         </div>
       </div>
@@ -176,9 +171,9 @@ const Index = () => {
       {/* Macro Stats */}
       <div className="px-6 mb-6 animate-slide-up">
         <MacroStats 
-          water={1.2}
-          exercise={45}
-          food={meals.length}
+          water={progress?.water_intake || 0}
+          exercise={progress?.exercise_minutes || 0}
+          food={todayMeals.length}
         />
       </div>
 
@@ -202,11 +197,27 @@ const Index = () => {
         </div>
         
         <div className="space-y-3">
-          {meals.map((meal, index) => (
+          {todayMeals.map((meal, index) => (
             <div key={meal.id} className="animate-scale-in card-interactive" style={{animationDelay: `${index * 0.1}s`}}>
-              <MealCard meal={meal} />
+              <MealCard meal={{
+                id: meal.id,
+                name: meal.name,
+                time: new Date(meal.consumed_at).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                }),
+                calories: meal.calories,
+                image: meal.image_url || '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png'
+              }} />
             </div>
           ))}
+          
+          {todayMeals.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Nenhuma refeição registrada hoje</p>
+              <p className="text-sm">Escaneie uma refeição para começar!</p>
+            </div>
+          )}
         </div>
 
         {/* Add Meal Button */}
