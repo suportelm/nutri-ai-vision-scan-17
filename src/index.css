@@ -65,10 +65,67 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    background-color: hsl(var(--background));
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+  }
+  
+  #root {
+    height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* PWA Específico */
+@media (display-mode: standalone) {
+  html, body {
+    height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  #root {
+    height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  
+  .pwa-container {
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
 
@@ -104,7 +161,24 @@
 @supports (padding: max(0px)) {
   .pwa-safe-area {
     padding-top: max(env(safe-area-inset-top), 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
+}
+
+/* Mobile-optimized container */
+.mobile-optimized {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background-color: hsl(var(--background));
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS Status Bar específico */
+.ios-status-bar {
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Typography Scale */
@@ -141,6 +215,10 @@
 /* Gradients */
 .bg-gradient-nutriai {
   background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+}
+
+.bg-gradient-card {
+  background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)));
 }
 
 /* Animations */
@@ -221,6 +299,8 @@
     overflow-x: hidden;
     width: 100%;
     height: 100%;
+    height: 100vh;
+    height: 100dvh;
   }
   
   #root {
@@ -230,10 +310,9 @@
   }
   
   .mobile-optimized {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     min-height: 100vh;
     min-height: 100dvh;
+    width: 100%;
   }
 }
 
@@ -258,6 +337,12 @@
   .browser-only {
     display: none;
   }
+  
+  /* Remover bounce do iOS */
+  body {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (display-mode: browser) {
@@ -270,15 +355,23 @@
   }
 }
 
-/* Status Bar Color */
-html {
-  background-color: hsl(var(--background));
-}
-
-/* iOS Status Bar */
+/* iOS específico - Prevenir bounce */
 @supports (-webkit-touch-callout: none) {
+  body {
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  
   .ios-status-bar {
     padding-top: constant(safe-area-inset-top);
     padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Android específico */
+@media (display-mode: standalone) and (max-width: 768px) {
+  .mobile-optimized {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }

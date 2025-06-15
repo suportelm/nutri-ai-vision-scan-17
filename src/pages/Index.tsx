@@ -31,7 +31,7 @@ const Index = () => {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="pwa-container mobile-optimized flex items-center justify-center">
         <div className="loading-spinner" />
       </div>
     );
@@ -62,7 +62,7 @@ const Index = () => {
   // Render different pages based on active tab
   if (activeTab === 'diary') {
     return (
-      <div className="no-scroll-x">
+      <div className="pwa-container no-scroll-x">
         <Diary />
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
         <PWAInstallPrompt />
@@ -72,7 +72,7 @@ const Index = () => {
 
   if (activeTab === 'stats') {
     return (
-      <div className="no-scroll-x">
+      <div className="pwa-container no-scroll-x">
         <Stats />
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
         <PWAInstallPrompt />
@@ -82,7 +82,7 @@ const Index = () => {
 
   if (activeTab === 'profile') {
     return (
-      <div className="no-scroll-x">
+      <div className="pwa-container no-scroll-x">
         <Profile />
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
         <PWAInstallPrompt />
@@ -96,10 +96,10 @@ const Index = () => {
   const userName = profile?.full_name || user.email?.split('@')[0] || 'Usuário';
 
   return (
-    <div className="min-h-screen bg-background text-foreground no-scroll-x">
+    <div className="pwa-container mobile-optimized bg-background text-foreground no-scroll-x">
       {/* Update notification */}
       {updateInfo.updateAvailable && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-primary text-primary-foreground p-3 text-center">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-primary text-primary-foreground p-3 text-center pt-safe">
           <p className="text-sm">Nova versão disponível!</p>
           <Button 
             onClick={updateApp} 

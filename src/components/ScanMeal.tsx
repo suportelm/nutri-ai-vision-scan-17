@@ -215,10 +215,10 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="pwa-container mobile-optimized bg-background text-foreground">
       <ScanMealHeader onClose={onClose} />
       
-      <div className="pb-8 space-y-4">
+      <div className="pb-8 space-y-4 px-4">
         <ImageUploadSection 
           imagePreview={imagePreview}
           isAnalyzing={isAnalyzing}
