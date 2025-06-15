@@ -10,9 +10,9 @@ interface DashboardHeaderProps {
 
 const DashboardHeader = ({ userName, isOnline, onProfileClick }: DashboardHeaderProps) => {
   return (
-    <div className="relative pwa-safe-area">
+    <div className="relative mobile-optimized">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-      <div className="relative flex items-center justify-between p-6 pt-12">
+      <div className="relative flex items-center justify-between p-6 pt-12 ios-status-bar">
         <div className="flex items-center gap-3 animate-fade-in">
           <div className="w-12 h-12 bg-gradient-nutriai rounded-full flex items-center justify-center shadow-xl">
             <Camera size={20} className="text-white" />

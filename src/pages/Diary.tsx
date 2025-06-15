@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,24 +16,17 @@ const Diary = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   
   const { profile } = useProfile();
-  const { meals } = useMeals();
+  const { dateMeals } = useMeals(selectedDate.toISOString().split('T')[0]);
   const dateString = selectedDate.toISOString().split('T')[0];
   const { progress } = useDailyProgress(dateString);
 
-  // Filtrar refeições para a data selecionada
-  const selectedDateMeals = meals.filter(meal => {
-    const mealDate = new Date(meal.consumed_at).toISOString().split('T')[0];
-    return mealDate === dateString;
-  });
-
   // Classificar refeições por período do dia
   const getMealsByPeriod = (startHour: number, endHour: number) => {
-    return selectedDateMeals.filter(meal => {
+    return dateMeals.filter(meal => {
       const mealHour = new Date(meal.consumed_at).getHours();
       if (startHour <= endHour) {
         return mealHour >= startHour && mealHour < endHour;
       } else {
-        // Para casos como 18:00 - 05:59 (jantar até café da manhã)
         return mealHour >= startHour || mealHour < endHour;
       }
     }).map(meal => ({
@@ -55,7 +47,7 @@ const Diary = () => {
   const breakfastMeals = getMealsByPeriod(6, 12);
   const lunchMeals = getMealsByPeriod(12, 18);
   const dinnerMeals = getMealsByPeriod(18, 24);
-  const snackMeals = selectedDateMeals.filter(meal => {
+  const snackMeals = dateMeals.filter(meal => {
     const mealHour = new Date(meal.consumed_at).getHours();
     return (mealHour >= 0 && mealHour < 6) || 
            (mealHour >= 9 && mealHour < 12) || 
@@ -75,7 +67,7 @@ const Diary = () => {
     }
   }));
 
-  const totalCalories = progress?.total_calories || selectedDateMeals.reduce((sum, meal) => sum + meal.calories, 0);
+  const totalCalories = progress?.total_calories || dateMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const goalCalories = profile?.daily_calorie_goal || 2200;
   const remaining = goalCalories - totalCalories;
 
@@ -93,7 +85,7 @@ const Diary = () => {
   const isFuture = selectedDate > new Date();
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-20 pt-safe">
       {/* Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-md border-b border-border/50 p-6 pt-12 z-10">
         <div className="flex items-center justify-between mb-4">
@@ -315,7 +307,7 @@ const MealSection = ({
             </p>
             {(isToday || !isFuture) && (
               <Button variant="ghost" size="sm" className="mt-2 text-primary">
-                Escanear Refeição
+                Adicionar Refeição
               </Button>
             )}
           </Card>
