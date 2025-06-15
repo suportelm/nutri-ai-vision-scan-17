@@ -10,6 +10,7 @@ import Diary from "./pages/Diary";
 import Plans from "./pages/Plans";
 import Stats from "./pages/Stats";
 import Profile from "./pages/Profile";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,11 @@ const App = () => (
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/privacy" element={
+            <ProtectedRoute>
+              <Privacy onBack={() => window.history.back()} />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

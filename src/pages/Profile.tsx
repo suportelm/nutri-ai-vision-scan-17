@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,17 +15,24 @@ import {
   Edit,
   ChevronRight,
   Camera,
-  Save
+  Save,
+  BarChart
 } from 'lucide-react';
 import GoalsSettings from '@/components/GoalsSettings';
+import Privacy from '@/pages/Privacy';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 
-const Profile = () => {
+interface ProfileProps {
+  onNavigate?: (tab: string) => void;
+}
+
+const Profile = ({ onNavigate }: ProfileProps) => {
   const { signOut } = useAuth();
   const { profile, updateProfile, isUpdating, isLoading } = useProfile();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showGoalsSettings, setShowGoalsSettings] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -80,6 +86,12 @@ const Profile = () => {
       action: () => setShowGoalsSettings(true)
     },
     {
+      icon: BarChart,
+      title: 'Ver Estatísticas',
+      description: 'Acompanhe seu progresso detalhado',
+      action: () => onNavigate?.('stats')
+    },
+    {
       icon: Bell,
       title: 'Notificações',
       description: 'Gerencie lembretes e alertas',
@@ -95,7 +107,7 @@ const Profile = () => {
       icon: Shield,
       title: 'Privacidade',
       description: 'Configurações de privacidade',
-      action: () => {}
+      action: () => setShowPrivacy(true)
     }
   ];
 
@@ -107,6 +119,10 @@ const Profile = () => {
 
   if (showGoalsSettings) {
     return <GoalsSettings onBack={() => setShowGoalsSettings(false)} />;
+  }
+
+  if (showPrivacy) {
+    return <Privacy onBack={() => setShowPrivacy(false)} />;
   }
 
   if (isLoading) {
