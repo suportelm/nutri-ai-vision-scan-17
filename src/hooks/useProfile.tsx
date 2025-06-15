@@ -15,6 +15,14 @@ interface Profile {
   activity_level: string;
   goal: string;
   daily_calorie_goal: number;
+  protein_goal: number | null;
+  carb_goal: number | null;
+  fat_goal: number | null;
+  daily_water_goal: number | null;
+  daily_exercise_goal: number | null;
+  weekly_weight_goal: number | null;
+  target_weight: number | null;
+  main_objective: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -28,13 +36,20 @@ export const useProfile = () => {
     queryFn: async () => {
       if (!user) return null;
       
+      console.log('Fetching profile for user:', user.id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Profile data fetched:', data);
       return data as Profile;
     },
     enabled: !!user,
@@ -44,6 +59,8 @@ export const useProfile = () => {
     mutationFn: async (updates: Partial<Profile>) => {
       if (!user) throw new Error('No user logged in');
 
+      console.log('Updating profile with data:', updates);
+
       const { data, error } = await supabase
         .from('profiles')
         .update({ ...updates, updated_at: new Date().toISOString() })
@@ -51,10 +68,15 @@ export const useProfile = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile update error:', error);
+        throw error;
+      }
+      
+      console.log('Profile updated successfully:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
       toast({
         title: 'Sucesso!',
@@ -62,6 +84,7 @@ export const useProfile = () => {
       });
     },
     onError: (error: any) => {
+      console.error('Update profile error:', error);
       toast({
         title: 'Erro',
         description: error.message || 'Erro ao atualizar perfil',

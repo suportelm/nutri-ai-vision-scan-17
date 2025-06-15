@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,13 +15,15 @@ import {
   Check,
   ArrowLeft
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useProfile } from '@/hooks/useProfile';
 
 interface GoalsSettingsProps {
   onBack: () => void;
 }
 
 const GoalsSettings = ({ onBack }: GoalsSettingsProps) => {
+  const { profile, updateProfile, isUpdating } = useProfile();
+  
   const [goals, setGoals] = useState({
     dailyCalories: 2200,
     dailyWater: 2.5,
@@ -35,6 +37,24 @@ const GoalsSettings = ({ onBack }: GoalsSettingsProps) => {
 
   const [selectedObjective, setSelectedObjective] = useState('Perder Peso');
 
+  // Sincronizar com dados do perfil quando carregados
+  useEffect(() => {
+    if (profile) {
+      console.log('Loading goals from profile:', profile);
+      setGoals({
+        dailyCalories: profile.daily_calorie_goal || 2200,
+        dailyWater: profile.daily_water_goal || 2.5,
+        dailyExercise: profile.daily_exercise_goal || 60,
+        weeklyWeightGoal: profile.weekly_weight_goal || 0.5,
+        targetWeight: profile.target_weight || 60,
+        proteinGoal: profile.protein_goal || 120,
+        carbGoal: profile.carb_goal || 250,
+        fatGoal: profile.fat_goal || 70
+      });
+      setSelectedObjective(profile.main_objective || 'Perder Peso');
+    }
+  }, [profile]);
+
   const objectives = [
     'Perder Peso',
     'Ganhar Massa Muscular',
@@ -44,12 +64,18 @@ const GoalsSettings = ({ onBack }: GoalsSettingsProps) => {
   ];
 
   const handleSave = () => {
-    localStorage.setItem('user_goals', JSON.stringify(goals));
-    localStorage.setItem('user_objective', selectedObjective);
+    console.log('Saving goals to database:', goals, selectedObjective);
     
-    toast({
-      title: 'Sucesso!',
-      description: 'Suas metas foram salvas com sucesso.',
+    updateProfile({
+      daily_calorie_goal: goals.dailyCalories,
+      daily_water_goal: goals.dailyWater,
+      daily_exercise_goal: goals.dailyExercise,
+      weekly_weight_goal: goals.weeklyWeightGoal,
+      target_weight: goals.targetWeight,
+      protein_goal: goals.proteinGoal,
+      carb_goal: goals.carbGoal,
+      fat_goal: goals.fatGoal,
+      main_objective: selectedObjective
     });
   };
 
@@ -242,9 +268,10 @@ const GoalsSettings = ({ onBack }: GoalsSettingsProps) => {
           onClick={handleSave}
           className="w-full bg-gradient-nutriai hover:opacity-90 py-4"
           size="lg"
+          disabled={isUpdating}
         >
           <Check size={20} className="mr-2" />
-          Salvar Metas
+          {isUpdating ? 'Salvando...' : 'Salvar Metas'}
         </Button>
       </div>
     </div>

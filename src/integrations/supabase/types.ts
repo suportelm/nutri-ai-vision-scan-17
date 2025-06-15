@@ -157,40 +157,64 @@ export type Database = {
         Row: {
           activity_level: string | null
           age: number | null
+          carb_goal: number | null
           created_at: string
           daily_calorie_goal: number | null
+          daily_exercise_goal: number | null
+          daily_water_goal: number | null
           email: string | null
+          fat_goal: number | null
           full_name: string | null
           goal: string | null
           height: number | null
           id: string
+          main_objective: string | null
+          protein_goal: number | null
+          target_weight: number | null
           updated_at: string
+          weekly_weight_goal: number | null
           weight: number | null
         }
         Insert: {
           activity_level?: string | null
           age?: number | null
+          carb_goal?: number | null
           created_at?: string
           daily_calorie_goal?: number | null
+          daily_exercise_goal?: number | null
+          daily_water_goal?: number | null
           email?: string | null
+          fat_goal?: number | null
           full_name?: string | null
           goal?: string | null
           height?: number | null
           id: string
+          main_objective?: string | null
+          protein_goal?: number | null
+          target_weight?: number | null
           updated_at?: string
+          weekly_weight_goal?: number | null
           weight?: number | null
         }
         Update: {
           activity_level?: string | null
           age?: number | null
+          carb_goal?: number | null
           created_at?: string
           daily_calorie_goal?: number | null
+          daily_exercise_goal?: number | null
+          daily_water_goal?: number | null
           email?: string | null
+          fat_goal?: number | null
           full_name?: string | null
           goal?: string | null
           height?: number | null
           id?: string
+          main_objective?: string | null
+          protein_goal?: number | null
+          target_weight?: number | null
           updated_at?: string
+          weekly_weight_goal?: number | null
           weight?: number | null
         }
         Relationships: []

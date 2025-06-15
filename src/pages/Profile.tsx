@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,21 +24,38 @@ import { useProfile } from '@/hooks/useProfile';
 
 const Profile = () => {
   const { signOut } = useAuth();
-  const { profile, updateProfile, isUpdating } = useProfile();
+  const { profile, updateProfile, isUpdating, isLoading } = useProfile();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showGoalsSettings, setShowGoalsSettings] = useState(false);
   
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || '',
-    age: profile?.age || '',
-    weight: profile?.weight || '',
-    height: profile?.height || '',
-    activity_level: profile?.activity_level || 'moderado',
-    goal: profile?.goal || 'manter_peso',
-    daily_calorie_goal: profile?.daily_calorie_goal || 2000,
+    full_name: '',
+    age: '',
+    weight: '',
+    height: '',
+    activity_level: 'moderado',
+    goal: 'manter_peso',
+    daily_calorie_goal: 2000,
   });
 
+  // Sincronizar formData com dados do perfil sempre que o perfil for carregado
+  useEffect(() => {
+    if (profile) {
+      console.log('Updating form data with profile:', profile);
+      setFormData({
+        full_name: profile.full_name || '',
+        age: profile.age?.toString() || '',
+        weight: profile.weight?.toString() || '',
+        height: profile.height?.toString() || '',
+        activity_level: profile.activity_level || 'moderado',
+        goal: profile.goal || 'manter_peso',
+        daily_calorie_goal: profile.daily_calorie_goal || 2000,
+      });
+    }
+  }, [profile]);
+
   const handleSaveProfile = () => {
+    console.log('Saving profile with data:', formData);
     updateProfile({
       full_name: formData.full_name,
       age: formData.age ? parseInt(formData.age.toString()) : null,
@@ -92,6 +109,17 @@ const Profile = () => {
     return <GoalsSettings onBack={() => setShowGoalsSettings(false)} />;
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
       {/* Header */}
@@ -106,15 +134,6 @@ const Profile = () => {
                 handleSaveProfile();
               } else {
                 setIsEditingProfile(true);
-                setFormData({
-                  full_name: profile?.full_name || '',
-                  age: profile?.age || '',
-                  weight: profile?.weight || '',
-                  height: profile?.height || '',
-                  activity_level: profile?.activity_level || 'moderado',
-                  goal: profile?.goal || 'manter_peso',
-                  daily_calorie_goal: profile?.daily_calorie_goal || 2000,
-                });
               }
             }}
             disabled={isUpdating}
