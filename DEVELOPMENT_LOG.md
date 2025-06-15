@@ -28,17 +28,19 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 - [x] Classificação automática de refeições por horário
 - [x] Sistema otimizado de lanches (sem duplicação)
 - [x] Interface melhorada com cores consistentes em dark mode
+- [x] Aba Stats com dados reais conectados
+- [x] Gráficos interativos com tooltips customizados
+- [x] Sistema de conquistas dinâmico
+- [x] Estatísticas baseadas em dados reais do usuário
 
 ### 🔄 Em Desenvolvimento
-- [ ] Dashboard em tempo real
-- [ ] Visualizações de progresso
 - [ ] Sistema de notificações
+- [ ] Melhorias no Scanner
 
 ### 📝 Pendente
 - [ ] Integração com Stripe
 - [ ] Planos de assinatura
 - [ ] Relatórios avançados
-- [ ] Sistema de conquistas
 - [ ] Compartilhamento social
 
 ## 🗄️ Estrutura do Banco de Dados
@@ -72,11 +74,12 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 - `Index.tsx` - Dashboard principal (263 linhas - precisa refatoração)
 - `Diary.tsx` - Diário alimentar detalhado ✅ OTIMIZADO
 - `Profile.tsx` - Perfil e configurações
-- `Stats.tsx` - Estatísticas e gráficos
+- `Stats.tsx` - Estatísticas e gráficos ✅ ATUALIZADO
 
 ### Componentes
 - `ScanMeal.tsx` - Interface de escaneamento (283 linhas - precisa refatoração)
 - `MealCard.tsx` - Card de refeição ✅ OTIMIZADO
+- `MacroStats.tsx` - Estatísticas de macros ✅ OTIMIZADO
 - `ProtectedRoute.tsx` - Guard de autenticação
 - `BottomNav.tsx` - Navegação principal
 
@@ -113,16 +116,36 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 - ✅ Evita duplicação de informações
 - ✅ Horário específico: madrugada (00:00-05:59) e noite (22:00-23:59)
 
+## 📊 Aba Stats - Atualizada e Conectada
+### Dados Reais Conectados
+- ✅ **Estatísticas baseadas em dados reais**: Peso, calorias médias, sequência de dias, total de refeições
+- ✅ **Gráficos interativos**: Tooltips customizados em todos os gráficos
+- ✅ **Evolução do peso**: Gráfico de linha com dados simulados baseados no perfil
+- ✅ **Calorias semanais**: Gráfico de barras com dados reais do `useDailyProgress`
+- ✅ **Distribuição de macros**: Calculada dinamicamente das refeições recentes
+
+### Sistema de Conquistas Dinâmico
+- ✅ **"7 Dias Consecutivos"**: Ativa automaticamente quando `weekStreak >= 7`
+- ✅ **"Scanner Expert"**: Progresso baseado no número real de refeições (`totalMealsLogged`)
+- ✅ **"Mestre da Consistência"**: Progresso baseado na sequência real de dias
+- ✅ **Cores consistentes**: Dark mode otimizado com cores do design system
+
+### Interatividade Melhorada
+- ✅ **Tooltips customizados**: Mostram dados formatados ao passar o mouse
+- ✅ **Botões de período**: Semana/Mês/Ano (preparado para implementação futura)
+- ✅ **Animações suaves**: Transições e hover effects
+- ✅ **Badges dinâmicos**: Mostram conquistas ativas vs inativas
+
 ## 🚨 Problemas Conhecidos
 1. **Interface de Escaneamento**: Muito simples, falta feedback visual
 2. **Arquivos Grandes**: Index.tsx e ScanMeal.tsx precisam refatoração
 3. **UX**: Botões sem feedback, navegação confusa
 
 ## 📋 Próximos Passos Priorizados
-1. **Aba Stats** - Corrigir dados e implementar gráficos interativos
-2. **Sistema de Conquistas** - Implementar quando usuário atinge metas
-3. **Melhorias no Scanner** - Interface mobile e feedback visual
-4. **Refatoração** - Quebrar arquivos grandes em componentes menores
+1. **Melhorias no Scanner** - Interface mobile e feedback visual
+2. **Refatoração** - Quebrar arquivos grandes em componentes menores
+3. **Sistema de Notificações** - Implementar quando usuário atinge metas
+4. **Períodos de Tempo** - Implementar filtros mês/ano na aba Stats
 
 ## 🔑 Configurações Necessárias
 - **OPENAI_API_KEY**: Configurada no Supabase Edge Functions
@@ -136,12 +159,13 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 - Edge Functions: 1
 - Tabelas no banco: 4
 
-## 🎯 Status Atual da Aba Diary
-- ✅ **100% Funcional** - Calendário conectado com dados reais
-- ✅ **Interface Otimizada** - Cores melhoradas e alinhamento perfeito
-- ✅ **UX Melhorada** - Botões limpos e sistema de lanches inteligente
-- ✅ **Responsivo** - Funciona perfeitamente em mobile
+## 🎯 Status Atual
+- ✅ **Aba Diary**: 100% Funcional e otimizada
+- ✅ **Aba Stats**: Dados reais conectados com gráficos interativos
+- ✅ **Sistema de Conquistas**: Dinâmico e baseado em dados reais
+- ✅ **Interface Dark Mode**: Cores consistentes em todo o app
+- 🔄 **Próximo**: Melhorias no Scanner e refatoração de arquivos grandes
 
 ---
 *Última atualização: 15/06/2025*
-*Status: Aba Diary finalizada e otimizada, prontos para próxima etapa*
+*Status: Aba Stats finalizada com dados reais, próximo passo é Scanner*
