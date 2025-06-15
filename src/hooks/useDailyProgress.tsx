@@ -19,7 +19,7 @@ interface DailyProgress {
   updated_at: string;
 }
 
-export const useDailyProgress = (date?: string) => {
+export const useDailyProgress = (date?: string, period: 'week' | 'month' | 'year' = 'week') => {
   const { user } = useAuth();
   const targetDate = date || new Date().toISOString().split('T')[0];
 
@@ -64,9 +64,44 @@ export const useDailyProgress = (date?: string) => {
     enabled: !!user,
   });
 
+  const { data: periodProgress = [] } = useQuery({
+    queryKey: ['periodProgress', user?.id, period],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      switch (period) {
+        case 'week':
+          startDate.setDate(endDate.getDate() - 7);
+          break;
+        case 'month':
+          startDate.setMonth(endDate.getMonth() - 1);
+          break;
+        case 'year':
+          startDate.setFullYear(endDate.getFullYear() - 1);
+          break;
+      }
+
+      const { data, error } = await supabase
+        .from('daily_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', startDate.toISOString().split('T')[0])
+        .lte('date', endDate.toISOString().split('T')[0])
+        .order('date', { ascending: true });
+
+      if (error) throw error;
+      return data as DailyProgress[];
+    },
+    enabled: !!user,
+  });
+
   return {
     progress,
     weeklyProgress,
+    periodProgress,
     isLoading,
   };
 };
