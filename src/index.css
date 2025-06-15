@@ -78,8 +78,7 @@
     /* Prevent overscroll bounce */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
-    /* Fix for iOS safe areas */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    height: 100%;
   }
 
   body {
@@ -100,9 +99,30 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    /* iOS safe areas */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Safe area handling for all devices */
+  .safe-area-padding {
+    padding-top: max(env(safe-area-inset-top), 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+    padding-left: max(env(safe-area-inset-left), 0px);
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+
+  /* Mobile viewport fix */
+  @supports (-webkit-touch-callout: none) {
+    #root {
+      height: -webkit-fill-available;
+      min-height: -webkit-fill-available;
+    }
   }
 
   /* Typography System */
@@ -323,6 +343,7 @@
   input[type="text"], 
   input[type="email"], 
   input[type="password"], 
+  input[type="number"],
   textarea, 
   select {
     font-size: 16px;
@@ -333,5 +354,15 @@
 @media screen and (-webkit-device-pixel-ratio: 2) and (orientation: portrait) {
   .android-fix {
     -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  button, 
+  input, 
+  textarea, 
+  select {
+    min-height: 44px;
   }
 }
