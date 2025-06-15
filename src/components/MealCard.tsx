@@ -60,21 +60,21 @@ const MealCard = ({ meal }: MealCardProps) => {
           </div>
           
           {meal.nutrition && (
-            <div className="grid grid-cols-4 gap-2 mt-2">
+            <div className="grid grid-cols-4 gap-3 mt-3">
               <div className="text-center">
-                <div className="text-xs font-medium text-primary">{meal.nutrition.protein}g</div>
+                <div className="text-sm font-bold text-blue-400">{meal.nutrition.protein}g</div>
                 <div className="text-xs text-muted-foreground">Prot</div>
               </div>
               <div className="text-center">
-                <div className="text-xs font-medium text-secondary">{meal.nutrition.carbs}g</div>
+                <div className="text-sm font-bold text-orange-400">{meal.nutrition.carbs}g</div>
                 <div className="text-xs text-muted-foreground">Carbs</div>
               </div>
               <div className="text-center">
-                <div className="text-xs font-medium text-accent">{meal.nutrition.fat}g</div>
+                <div className="text-sm font-bold text-yellow-400">{meal.nutrition.fat}g</div>
                 <div className="text-xs text-muted-foreground">Gord</div>
               </div>
               <div className="text-center">
-                <div className="text-xs font-medium text-muted-foreground">{meal.nutrition.fiber}g</div>
+                <div className="text-sm font-bold text-green-400">{meal.nutrition.fiber}g</div>
                 <div className="text-xs text-muted-foreground">Fibra</div>
               </div>
             </div>

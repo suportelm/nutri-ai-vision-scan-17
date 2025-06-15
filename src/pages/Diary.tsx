@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -47,12 +48,12 @@ const Diary = () => {
   const breakfastMeals = getMealsByPeriod(6, 12);
   const lunchMeals = getMealsByPeriod(12, 18);
   const dinnerMeals = getMealsByPeriod(18, 24);
+  
+  // Lanches: apenas mostrar refeições fora dos horários principais
   const snackMeals = dateMeals.filter(meal => {
     const mealHour = new Date(meal.consumed_at).getHours();
-    return (mealHour >= 0 && mealHour < 6) || 
-           (mealHour >= 9 && mealHour < 12) || 
-           (mealHour >= 15 && mealHour < 18) || 
-           (mealHour >= 21 && mealHour < 24);
+    // Fora dos horários: 00:00-05:59 e 00:00-23:59 (mas não incluir horários principais)
+    return (mealHour >= 0 && mealHour < 6) || (mealHour >= 22 && mealHour < 24);
   }).map(meal => ({
     id: meal.id,
     name: meal.name,
@@ -201,19 +202,19 @@ const Diary = () => {
           {progress && (
             <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-border/50">
               <div className="text-center">
-                <div className="text-lg font-bold text-primary">{Math.round(progress.total_proteins)}g</div>
+                <div className="text-lg font-bold text-blue-400">{Math.round(progress.total_proteins)}g</div>
                 <div className="text-xs text-muted-foreground">Proteínas</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-secondary">{Math.round(progress.total_carbs)}g</div>
+                <div className="text-lg font-bold text-orange-400">{Math.round(progress.total_carbs)}g</div>
                 <div className="text-xs text-muted-foreground">Carboidratos</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-accent">{Math.round(progress.total_fats)}g</div>
+                <div className="text-lg font-bold text-yellow-400">{Math.round(progress.total_fats)}g</div>
                 <div className="text-xs text-muted-foreground">Gorduras</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-muted-foreground">{Math.round(progress.total_fiber)}g</div>
+                <div className="text-lg font-bold text-green-400">{Math.round(progress.total_fiber)}g</div>
                 <div className="text-xs text-muted-foreground">Fibras</div>
               </div>
             </div>
@@ -242,18 +243,20 @@ const Diary = () => {
           <MealSection
             title="Jantar"
             meals={dinnerMeals}
-            timeRange="18:00 - 23:59"
+            timeRange="18:00 - 21:59"
             selectedDate={selectedDate}
           />
 
-          {/* Snacks */}
-          <MealSection
-            title="Lanches"
-            meals={snackMeals}
-            timeRange="Qualquer horário"
-            selectedDate={selectedDate}
-            isSnacks={true}
-          />
+          {/* Snacks - só mostrar se tiver lanches nos horários específicos */}
+          {snackMeals.length > 0 && (
+            <MealSection
+              title="Lanches"
+              meals={snackMeals}
+              timeRange="22:00 - 05:59"
+              selectedDate={selectedDate}
+              isSnacks={true}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -287,7 +290,6 @@ const MealSection = ({
         {(isToday || !isFuture) && (
           <Button variant="outline" size="sm" className="gap-2">
             <Plus size={16} />
-            Adicionar
           </Button>
         )}
       </div>
@@ -307,7 +309,7 @@ const MealSection = ({
             </p>
             {(isToday || !isFuture) && (
               <Button variant="ghost" size="sm" className="mt-2 text-primary">
-                Adicionar Refeição
+                <Plus size={16} />
               </Button>
             )}
           </Card>

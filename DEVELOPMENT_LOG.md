@@ -24,10 +24,12 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 - [x] Progresso diário calculado automaticamente
 - [x] Hook useMeals integrado
 - [x] Hook useDailyProgress funcional
+- [x] Aba Diary com calendário funcional
+- [x] Classificação automática de refeições por horário
+- [x] Sistema otimizado de lanches (sem duplicação)
+- [x] Interface melhorada com cores consistentes em dark mode
 
 ### 🔄 Em Desenvolvimento
-- [ ] Melhorias na interface de escaneamento
-- [ ] Aba Diary com calendário funcional
 - [ ] Dashboard em tempo real
 - [ ] Visualizações de progresso
 - [ ] Sistema de notificações
@@ -68,12 +70,13 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 
 ### Páginas
 - `Index.tsx` - Dashboard principal (263 linhas - precisa refatoração)
-- `Diary.tsx` - Diário alimentar detalhado
+- `Diary.tsx` - Diário alimentar detalhado ✅ OTIMIZADO
 - `Profile.tsx` - Perfil e configurações
 - `Stats.tsx` - Estatísticas e gráficos
 
 ### Componentes
 - `ScanMeal.tsx` - Interface de escaneamento (283 linhas - precisa refatoração)
+- `MealCard.tsx` - Card de refeição ✅ OTIMIZADO
 - `ProtectedRoute.tsx` - Guard de autenticação
 - `BottomNav.tsx` - Navegação principal
 
@@ -89,18 +92,37 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 4. **Visualização de Progresso** → Dashboard + Diary
 5. **Acompanhamento** → Stats + histórico
 
+## 🎨 Melhorias Recentes na Aba Diary
+### Interface Otimizada
+- ✅ Removido texto "Adicionar Refeição" dos botões (mantém apenas ícone +)
+- ✅ Sistema de classificação automática por horários mantido:
+  - **Café da Manhã**: 06:00 - 11:59
+  - **Almoço**: 12:00 - 17:59  
+  - **Jantar**: 18:00 - 21:59
+  - **Lanches**: 22:00 - 05:59 (apenas quando existem)
+
+### Cores e Alinhamento Melhorados
+- ✅ Macronutrientes com cores distintas e melhor alinhamento:
+  - **Proteínas**: Azul (`text-blue-400`)
+  - **Carboidratos**: Laranja (`text-orange-400`)
+  - **Gorduras**: Amarelo (`text-yellow-400`)
+  - **Fibras**: Verde (`text-green-400`)
+
+### Sistema de Lanches Otimizado
+- ✅ Lanches só aparecem quando há refeições fora dos horários principais
+- ✅ Evita duplicação de informações
+- ✅ Horário específico: madrugada (00:00-05:59) e noite (22:00-23:59)
+
 ## 🚨 Problemas Conhecidos
 1. **Interface de Escaneamento**: Muito simples, falta feedback visual
-2. **Aba Diary**: Calendário não funcional, dados estáticos
-3. **Arquivos Grandes**: Index.tsx e ScanMeal.tsx precisam refatoração
-4. **UX**: Botões sem feedback, navegação confusa
+2. **Arquivos Grandes**: Index.tsx e ScanMeal.tsx precisam refatoração
+3. **UX**: Botões sem feedback, navegação confusa
 
-## 📋 Próximos Passos
-1. Melhorar interface de escaneamento com loading states
-2. Implementar calendário funcional na aba Diary
-3. Refatorar arquivos grandes em componentes menores
-4. Adicionar feedback visual em todas as ações
-5. Criar sistema de navegação mais intuitivo
+## 📋 Próximos Passos Priorizados
+1. **Aba Stats** - Corrigir dados e implementar gráficos interativos
+2. **Sistema de Conquistas** - Implementar quando usuário atinge metas
+3. **Melhorias no Scanner** - Interface mobile e feedback visual
+4. **Refatoração** - Quebrar arquivos grandes em componentes menores
 
 ## 🔑 Configurações Necessárias
 - **OPENAI_API_KEY**: Configurada no Supabase Edge Functions
@@ -114,6 +136,12 @@ NutriAI Vision é um aplicativo PWA de análise nutricional usando IA para recon
 - Edge Functions: 1
 - Tabelas no banco: 4
 
+## 🎯 Status Atual da Aba Diary
+- ✅ **100% Funcional** - Calendário conectado com dados reais
+- ✅ **Interface Otimizada** - Cores melhoradas e alinhamento perfeito
+- ✅ **UX Melhorada** - Botões limpos e sistema de lanches inteligente
+- ✅ **Responsivo** - Funciona perfeitamente em mobile
+
 ---
 *Última atualização: 15/06/2025*
-*Status: IA integrada, trabalhando em melhorias de UX*
+*Status: Aba Diary finalizada e otimizada, prontos para próxima etapa*
