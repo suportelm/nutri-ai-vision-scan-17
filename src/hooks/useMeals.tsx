@@ -32,7 +32,7 @@ interface CreateMealData {
   image_url?: string;
 }
 
-export const useMeals = () => {
+export const useMeals = (date?: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
@@ -74,6 +74,25 @@ export const useMeals = () => {
     enabled: !!user,
   });
 
+  const { data: dateMeals = [] } = useQuery({
+    queryKey: ['dateMeals', user?.id, date],
+    queryFn: async () => {
+      if (!user || !date) return [];
+      
+      const { data, error } = await supabase
+        .from('meals')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('consumed_at', `${date}T00:00:00`)
+        .lt('consumed_at', `${date}T23:59:59`)
+        .order('consumed_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Meal[];
+    },
+    enabled: !!user && !!date,
+  });
+
   const createMealMutation = useMutation({
     mutationFn: async (mealData: CreateMealData) => {
       if (!user) throw new Error('No user logged in');
@@ -93,6 +112,7 @@ export const useMeals = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meals', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['todayMeals', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['dateMeals', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['dailyProgress', user?.id] });
       toast({
         title: 'Sucesso!',
@@ -130,6 +150,7 @@ export const useMeals = () => {
   return {
     meals,
     todayMeals,
+    dateMeals,
     isLoading,
     createMeal: createMealMutation.mutate,
     isCreating: createMealMutation.isPending,

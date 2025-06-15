@@ -17,39 +17,65 @@ const Diary = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   
   const { profile } = useProfile();
+  const { meals } = useMeals();
   const dateString = selectedDate.toISOString().split('T')[0];
   const { progress } = useDailyProgress(dateString);
-  
-  // Para demonstração, vamos usar dados mockados por enquanto
-  // TODO: Integrar com dados reais baseados na data selecionada
-  const mockMeals = [
-    {
-      id: '1',
-      name: 'Café da Manhã - Aveia com Frutas',
-      time: '08:30',
-      calories: 320,
-      image: '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png',
-      nutrition: { protein: 12, carbs: 45, fat: 8, fiber: 6 }
-    },
-    {
-      id: '2',
-      name: 'Almoço - Salmão Grelhado com Arroz',
-      time: '12:45',
-      calories: 680,
-      image: '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png',
-      nutrition: { protein: 35, carbs: 25, fat: 22, fiber: 4 }
-    },
-    {
-      id: '3',
-      name: 'Jantar - Salada Caesar com Frango',
-      time: '19:20',
-      calories: 420,
-      image: '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png',
-      nutrition: { protein: 18, carbs: 15, fat: 28, fiber: 8 }
-    }
-  ];
 
-  const totalCalories = progress?.total_calories || mockMeals.reduce((sum, meal) => sum + meal.calories, 0);
+  // Filtrar refeições para a data selecionada
+  const selectedDateMeals = meals.filter(meal => {
+    const mealDate = new Date(meal.consumed_at).toISOString().split('T')[0];
+    return mealDate === dateString;
+  });
+
+  // Classificar refeições por período do dia
+  const getMealsByPeriod = (startHour: number, endHour: number) => {
+    return selectedDateMeals.filter(meal => {
+      const mealHour = new Date(meal.consumed_at).getHours();
+      if (startHour <= endHour) {
+        return mealHour >= startHour && mealHour < endHour;
+      } else {
+        // Para casos como 18:00 - 05:59 (jantar até café da manhã)
+        return mealHour >= startHour || mealHour < endHour;
+      }
+    }).map(meal => ({
+      id: meal.id,
+      name: meal.name,
+      time: format(new Date(meal.consumed_at), 'HH:mm'),
+      calories: meal.calories,
+      image: meal.image_url || '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png',
+      nutrition: {
+        protein: meal.proteins || 0,
+        carbs: meal.carbs || 0,
+        fat: meal.fats || 0,
+        fiber: meal.fiber || 0
+      }
+    }));
+  };
+
+  const breakfastMeals = getMealsByPeriod(6, 12);
+  const lunchMeals = getMealsByPeriod(12, 18);
+  const dinnerMeals = getMealsByPeriod(18, 24);
+  const snackMeals = selectedDateMeals.filter(meal => {
+    const mealHour = new Date(meal.consumed_at).getHours();
+    return (mealHour >= 0 && mealHour < 6) || 
+           (mealHour >= 9 && mealHour < 12) || 
+           (mealHour >= 15 && mealHour < 18) || 
+           (mealHour >= 21 && mealHour < 24);
+  }).map(meal => ({
+    id: meal.id,
+    name: meal.name,
+    time: format(new Date(meal.consumed_at), 'HH:mm'),
+    calories: meal.calories,
+    image: meal.image_url || '/lovable-uploads/abf8be56-ed9d-49fc-aa20-49ce383b9ce3.png',
+    nutrition: {
+      protein: meal.proteins || 0,
+      carbs: meal.carbs || 0,
+      fat: meal.fats || 0,
+      fiber: meal.fiber || 0
+    }
+  }));
+
+  const totalCalories = progress?.total_calories || selectedDateMeals.reduce((sum, meal) => sum + meal.calories, 0);
   const goalCalories = profile?.daily_calorie_goal || 2200;
   const remaining = goalCalories - totalCalories;
 
@@ -64,6 +90,7 @@ const Diary = () => {
   };
 
   const isToday = selectedDate.toDateString() === new Date().toDateString();
+  const isFuture = selectedDate > new Date();
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
@@ -88,6 +115,7 @@ const Diary = () => {
                     setShowCalendar(false);
                   }
                 }}
+                disabled={(date) => date > new Date()}
                 initialFocus
               />
             </PopoverContent>
@@ -112,6 +140,9 @@ const Diary = () => {
             {isToday && (
               <div className="text-sm text-primary font-medium">Hoje</div>
             )}
+            {isFuture && (
+              <div className="text-sm text-muted-foreground">Futuro</div>
+            )}
           </div>
           
           <Button 
@@ -119,7 +150,7 @@ const Diary = () => {
             size="sm" 
             onClick={() => navigateDate('next')}
             className="p-2"
-            disabled={selectedDate >= new Date()}
+            disabled={isFuture}
           >
             <ChevronRight size={20} />
           </Button>
@@ -173,6 +204,28 @@ const Diary = () => {
               style={{ width: `${Math.min((totalCalories / goalCalories) * 100, 100)}%` }}
             />
           </div>
+
+          {/* Nutrition Summary */}
+          {progress && (
+            <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-border/50">
+              <div className="text-center">
+                <div className="text-lg font-bold text-primary">{Math.round(progress.total_proteins)}g</div>
+                <div className="text-xs text-muted-foreground">Proteínas</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-secondary">{Math.round(progress.total_carbs)}g</div>
+                <div className="text-xs text-muted-foreground">Carboidratos</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-accent">{Math.round(progress.total_fats)}g</div>
+                <div className="text-xs text-muted-foreground">Gorduras</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-muted-foreground">{Math.round(progress.total_fiber)}g</div>
+                <div className="text-xs text-muted-foreground">Fibras</div>
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Meals by time periods */}
@@ -180,30 +233,34 @@ const Diary = () => {
           {/* Breakfast */}
           <MealSection
             title="Café da Manhã"
-            meals={mockMeals.filter(meal => meal.time < '12:00')}
+            meals={breakfastMeals}
             timeRange="06:00 - 11:59"
+            selectedDate={selectedDate}
           />
 
           {/* Lunch */}
           <MealSection
             title="Almoço"
-            meals={mockMeals.filter(meal => meal.time >= '12:00' && meal.time < '18:00')}
+            meals={lunchMeals}
             timeRange="12:00 - 17:59"
+            selectedDate={selectedDate}
           />
 
           {/* Dinner */}
           <MealSection
             title="Jantar"
-            meals={mockMeals.filter(meal => meal.time >= '18:00')}
+            meals={dinnerMeals}
             timeRange="18:00 - 23:59"
+            selectedDate={selectedDate}
           />
 
           {/* Snacks */}
           <MealSection
             title="Lanches"
-            meals={[]}
+            meals={snackMeals}
             timeRange="Qualquer horário"
-            isEmpty={true}
+            selectedDate={selectedDate}
+            isSnacks={true}
           />
         </div>
       </div>
@@ -216,13 +273,18 @@ const MealSection = ({
   title, 
   meals, 
   timeRange, 
-  isEmpty = false 
+  selectedDate,
+  isSnacks = false 
 }: { 
   title: string; 
   meals: any[]; 
   timeRange: string;
-  isEmpty?: boolean;
+  selectedDate: Date;
+  isSnacks?: boolean;
 }) => {
+  const isFuture = selectedDate > new Date();
+  const isToday = selectedDate.toDateString() === new Date().toDateString();
+  
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -230,10 +292,12 @@ const MealSection = ({
           <h3 className="text-lg font-semibold">{title}</h3>
           <p className="text-sm text-muted-foreground">{timeRange}</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Plus size={16} />
-          Adicionar
-        </Button>
+        {(isToday || !isFuture) && (
+          <Button variant="outline" size="sm" className="gap-2">
+            <Plus size={16} />
+            Adicionar
+          </Button>
+        )}
       </div>
       
       <div className="space-y-3">
@@ -242,11 +306,18 @@ const MealSection = ({
         ) : (
           <Card className="border-dashed border-2 border-muted p-6 text-center">
             <p className="text-muted-foreground">
-              {isEmpty ? 'Nenhum lanche registrado hoje' : `Nenhum ${title.toLowerCase()} registrado`}
+              {isFuture 
+                ? `Nenhum ${title.toLowerCase()} planejado` 
+                : isSnacks 
+                  ? 'Nenhum lanche registrado neste dia' 
+                  : `Nenhum ${title.toLowerCase()} registrado neste dia`
+              }
             </p>
-            <Button variant="ghost" size="sm" className="mt-2 text-primary">
-              Escanear Refeição
-            </Button>
+            {(isToday || !isFuture) && (
+              <Button variant="ghost" size="sm" className="mt-2 text-primary">
+                Escanear Refeição
+              </Button>
+            )}
           </Card>
         )}
       </div>
