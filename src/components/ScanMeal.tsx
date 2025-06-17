@@ -184,10 +184,13 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
         meal_type: mealType
       };
 
-      await createMeal(mealData);
-      onMealAdded(mealData);
+      // Chamar createMeal e aguardar completar
+      createMeal(mealData);
+      
+      // Não chamar onMealAdded para evitar duplicação
+      // O callback será executado automaticamente quando a mutação for bem-sucedida
 
-      // Reset form e voltar
+      // Reset form
       setSelectedImage(null);
       setImagePreview(null);
       setAnalysisResult(null);
@@ -200,7 +203,7 @@ const ScanMeal = ({ onClose, onMealAdded }: ScanMealProps) => {
       // Voltar automaticamente após salvar
       setTimeout(() => {
         onClose();
-      }, 1500);
+      }, 1000);
       
     } catch (error: any) {
       console.error('Erro ao salvar refeição:', error);

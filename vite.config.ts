@@ -34,8 +34,8 @@ export default defineConfig(({ mode }) => ({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'NutriAI Vision - Nutrition Tracking with AI',
-        short_name: 'NutriAI',
+        name: 'FoodCam AI - Nutrition Tracking with AI',
+        short_name: 'FoodCam AI',
         description: 'AI-powered nutrition tracking app with meal scanning and personalized meal plans',
         theme_color: '#3b82f6',
         background_color: '#0f172a',

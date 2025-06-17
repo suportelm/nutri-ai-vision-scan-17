@@ -24,7 +24,7 @@ const Index = () => {
   
   const { user, loading: authLoading } = useAuth();
   const { profile } = useProfile();
-  const { todayMeals, createMeal } = useMeals();
+  const { todayMeals } = useMeals();
   const { progress } = useDailyProgress();
   const { updateInfo, isOnline, updateApp } = usePWA();
 
@@ -42,9 +42,8 @@ const Index = () => {
     return <Auth onAuthSuccess={() => {}} />;
   }
 
-  const handleMealAdded = (newMeal: any) => {
-    createMeal(newMeal);
-  };
+  // Removido o handleMealAdded para evitar duplicação
+  // A invalidação das queries já é feita automaticamente pelo useMeals
 
   const handleScanMeal = () => {
     setShowScanner(true);
@@ -54,7 +53,7 @@ const Index = () => {
     return (
       <ScanMeal 
         onClose={() => setShowScanner(false)} 
-        onMealAdded={handleMealAdded}
+        onMealAdded={() => {}} // Callback vazio para evitar duplicação
       />
     );
   }

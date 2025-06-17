@@ -109,11 +109,17 @@ export const useMeals = (date?: string) => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (newMeal) => {
+      // Invalidar apenas as queries necessárias de forma mais específica
       queryClient.invalidateQueries({ queryKey: ['meals', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['todayMeals', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['dateMeals', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['dailyProgress', user?.id] });
+      
+      // Se estamos trabalhando com uma data específica, invalidar também
+      if (date) {
+        queryClient.invalidateQueries({ queryKey: ['dateMeals', user?.id, date] });
+      }
+      
       toast({
         title: 'Sucesso!',
         description: 'Refeição adicionada com sucesso!',
