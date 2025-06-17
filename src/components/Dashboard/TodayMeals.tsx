@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import MealCard from '@/components/MealCard';
@@ -12,12 +13,14 @@ interface TodayMealsProps {
   meals: Meal[];
   onScanMeal: () => void;
   onViewAll: () => void;
+  onViewStats: () => void;
   isOnline: boolean;
 }
 const TodayMeals = ({
   meals,
   onScanMeal,
   onViewAll,
+  onViewStats,
   isOnline
 }: TodayMealsProps) => {
   return <div className="px-6 mb-20 animate-slide-up my-0 py-[20px]">
@@ -58,7 +61,7 @@ const TodayMeals = ({
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 gap-3 mt-6">
-        <Button variant="outline" className="btn-secondary" onClick={() => {}}>
+        <Button variant="outline" className="btn-secondary" onClick={onViewStats}>
           Ver Estatísticas
         </Button>
         <Button variant="outline" className="btn-secondary" onClick={() => {}}>

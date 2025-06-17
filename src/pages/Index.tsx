@@ -133,6 +133,7 @@ const Index = () => {
         meals={todayMeals}
         onScanMeal={handleScanMeal}
         onViewAll={() => setActiveTab('diary')}
+        onViewStats={() => setActiveTab('stats')}
         isOnline={isOnline}
       />
 
