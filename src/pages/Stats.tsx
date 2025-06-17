@@ -35,7 +35,7 @@ const Stats = () => {
   }, {
     id: 'premium',
     name: 'Premium',
-    price: 19.90,
+    price: 25.00,
     period: 'month' as const,
     popular: true,
     features: ['Escaneamento ilimitado', 'Estatísticas avançadas', 'Histórico completo', 'Relatórios personalizados', 'Planos alimentares com IA', 'Análise nutricional detalhada'],
