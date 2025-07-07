@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,10 +14,10 @@ import {
   LogOut,
   Edit,
   ChevronRight,
-  Camera,
   Save
 } from 'lucide-react';
 import GoalsSettings from '@/components/GoalsSettings';
+import AvatarUpload from '@/components/AvatarUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 
@@ -66,6 +65,10 @@ const Profile = () => {
       daily_calorie_goal: formData.daily_calorie_goal,
     });
     setIsEditingProfile(false);
+  };
+
+  const handleAvatarUpdate = (avatarUrl: string) => {
+    updateProfile({ avatar_url: avatarUrl });
   };
 
   const handleLogout = async () => {
@@ -147,17 +150,11 @@ const Profile = () => {
         {/* Profile Header */}
         <Card className="bg-gradient-card border-border/50 p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="relative">
-              <div className="w-20 h-20 bg-gradient-nutriai rounded-full flex items-center justify-center">
-                <User size={32} className="text-white" />
-              </div>
-              <Button 
-                size="sm" 
-                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full p-0 bg-primary hover:bg-primary/90"
-              >
-                <Camera size={14} />
-              </Button>
-            </div>
+            <AvatarUpload
+              currentAvatarUrl={profile?.avatar_url}
+              onAvatarUpdate={handleAvatarUpdate}
+              disabled={isUpdating}
+            />
             
             <div className="flex-1">
               <h2 className="text-xl font-semibold">{profile?.full_name || 'Usuário'}</h2>

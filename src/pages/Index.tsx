@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import ScanMeal from '@/components/ScanMeal';
@@ -116,6 +115,7 @@ const Index = () => {
         userName={userName}
         isOnline={isOnline}
         onProfileClick={() => setActiveTab('profile')}
+        avatarUrl={profile?.avatar_url}
       />
 
       {/* Today Section */}
