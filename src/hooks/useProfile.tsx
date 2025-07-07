@@ -23,6 +23,7 @@ interface Profile {
   weekly_weight_goal: number | null;
   target_weight: number | null;
   main_objective: string | null;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 }
