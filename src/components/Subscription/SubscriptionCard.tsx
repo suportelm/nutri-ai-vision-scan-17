@@ -12,7 +12,7 @@ interface SubscriptionPlan {
   period: 'month' | 'year';
   originalPrice?: number;
   popular?: boolean;
-  priceId?: string;
+  paymentType?: 'monthly' | 'annual';
   features: string[];
   limits: {
     scans: number | 'unlimited';

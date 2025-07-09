@@ -32,28 +32,16 @@ export const useSubscription = () => {
     enabled: !!user,
   });
 
-  const createCheckoutMutation = useMutation({
-    mutationFn: async (priceId: string) => {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId }
-      });
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      // Abrir checkout em nova aba
-      window.open(data.url, '_blank');
-    },
-    onError: (error: any) => {
-      console.error('Checkout error:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao criar sessão de pagamento',
-        variant: 'destructive'
-      });
-    },
-  });
+  // Use Payment Links instead of checkout sessions
+  const openPaymentLink = (planType: 'monthly' | 'annual') => {
+    const links = {
+      monthly: 'https://buy.stripe.com/3cI6oG0t3ee73yOdYbgbm06',
+      annual: 'https://buy.stripe.com/4gM6oGa3Dgmf5GW9HVgbm07'
+    };
+    
+    // Open payment link in new tab
+    window.open(links[planType], '_blank');
+  };
 
   const refreshSubscription = async () => {
     queryClient.invalidateQueries({ queryKey: ['subscription', user?.id] });
@@ -67,8 +55,7 @@ export const useSubscription = () => {
     isLoading,
     error,
     isPremium,
-    createCheckout: createCheckoutMutation.mutate,
-    isCreatingCheckout: createCheckoutMutation.isPending,
+    openPaymentLink,
     refreshSubscription,
   };
 };

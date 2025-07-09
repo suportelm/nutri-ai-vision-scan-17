@@ -17,7 +17,7 @@ const Stats = () => {
   const [showReports, setShowReports] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   
-  const { subscription, createCheckout, isCreatingCheckout } = useSubscription();
+  const { subscription, openPaymentLink } = useSubscription();
 
   const {
     stats,
@@ -52,7 +52,7 @@ const Stats = () => {
       price: 25.00,
       period: 'month' as const,
       popular: true,
-      priceId: 'price_1RiLvhA9A1JeVB2Hp83Sq4z3',
+      paymentType: 'monthly' as const,
       features: [
         'Escaneamento ilimitado',
         'Estatísticas avançadas',
@@ -74,7 +74,7 @@ const Stats = () => {
       price: 199.00,
       originalPrice: 300.00,
       period: 'year' as const,
-      priceId: 'price_1RiLxSA9A1JeVB2H5g6cC4u7',
+      paymentType: 'annual' as const,
       features: [
         'Todos os recursos Premium',
         '4 meses grátis',
@@ -92,8 +92,8 @@ const Stats = () => {
 
   const handleSelectPlan = (planId: string) => {
     const plan = subscriptionPlans.find(p => p.id === planId);
-    if (plan?.priceId) {
-      createCheckout(plan.priceId);
+    if (plan?.paymentType) {
+      openPaymentLink(plan.paymentType);
     }
   };
 
@@ -153,7 +153,7 @@ const Stats = () => {
                     plan={plan}
                     currentPlan={currentPlan}
                     onSelectPlan={handleSelectPlan}
-                    loading={isCreatingCheckout}
+                    loading={false}
                   />
                 ))}
               </div>
