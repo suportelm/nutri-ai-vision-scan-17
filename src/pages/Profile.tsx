@@ -147,26 +147,29 @@ const Profile = () => {
       </div>
 
       <div className="px-6 space-y-6">
-        {/* Profile Header */}
+        {/* Profile Header - Layout Mobile Otimizado */}
         <Card className="bg-gradient-card border-border/50 p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <AvatarUpload
-              currentAvatarUrl={profile?.avatar_url}
-              onAvatarUpdate={handleAvatarUpdate}
-              disabled={isUpdating}
-            />
+          {/* Avatar e Nome - Layout Responsivo */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-4">
+            <div className="flex-shrink-0">
+              <AvatarUpload
+                currentAvatarUrl={profile?.avatar_url}
+                onAvatarUpdate={handleAvatarUpdate}
+                disabled={isUpdating}
+              />
+            </div>
             
-            <div className="flex-1">
-              <h2 className="text-xl font-semibold">{profile?.full_name || 'Usuário'}</h2>
-              <p className="text-muted-foreground">{profile?.email}</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="flex-1 text-center sm:text-left min-w-0">
+              <h2 className="text-xl font-semibold truncate">{profile?.full_name || 'Usuário'}</h2>
+              <p className="text-muted-foreground text-sm truncate">{profile?.email}</p>
+              <p className="text-xs text-muted-foreground mt-1">
                 Membro desde {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'hoje'}
               </p>
             </div>
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/30">
+          {/* Quick Stats - Grid Responsivo */}
+          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border/30">
             <div className="text-center">
               <p className="text-sm font-medium">{profile?.weight || '--'}kg</p>
               <p className="text-xs text-muted-foreground">Peso</p>
@@ -189,7 +192,7 @@ const Profile = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name">Nome</Label>
                 <Input
@@ -211,7 +214,7 @@ const Profile = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="weight">Peso (kg)</Label>
                 <Input
